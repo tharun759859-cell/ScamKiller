@@ -8,17 +8,39 @@ class ScamKillerScanner {
   // Dynamically resolves backend API base URL
   _resolveApiBase() {
     try {
+      // 1. Explicit configuration override
+      if (typeof window !== "undefined" && window.__SCAM_KILLER_API_URL__) {
+        const customUrl = String(window.__SCAM_KILLER_API_URL__).trim().replace(/\/+$/, "");
+        return customUrl.endsWith("/api") ? customUrl : `${customUrl}/api`;
+      }
+
       const loc = window.location;
-      // If accessed directly from the Flask backend (port 5001 or 5000), use relative path
+      const hostname = (loc.hostname || "").toLowerCase();
+
+      // 2. Production Vercel deployment -> Route to Render backend
+      if (hostname === "scamkiller07.vercel.app" || hostname.endsWith(".vercel.app")) {
+        return "https://scamkiller07.onrender.com/api";
+      }
+
+      // 3. Accessed directly from the Flask backend (port 5001 or 5000)
       if (loc.protocol.startsWith("http") && (loc.port === "5001" || loc.port === "5000")) {
         return "/api";
       }
-      // If opened via VS Code Live Server (port 5500), Python http.server, file:// or other static host:
-      // Route API requests directly to the Python Flask backend on 127.0.0.1:5001
-      const port = window.__SCAM_KILLER_PORT__ || "5001";
-      return `http://127.0.0.1:${port}/api`;
-    } catch (_) {
+
+      // 4. Local development (VS Code Live Server on port 5500, localhost, 127.0.0.1, or file://)
+      if (hostname === "localhost" || hostname === "127.0.0.1" || loc.protocol === "file:") {
+        const port = window.__SCAM_KILLER_PORT__ || "5001";
+        return `http://127.0.0.1:${port}/api`;
+      }
+
+      // 5. Any other production HTTPS host fallback
+      if (loc.protocol === "https:") {
+        return "https://scamkiller07.onrender.com/api";
+      }
+
       return "/api";
+    } catch (_) {
+      return "https://scamkiller07.onrender.com/api";
     }
   }
 
