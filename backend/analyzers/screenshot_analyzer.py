@@ -9,6 +9,7 @@ import sys
 import shutil
 import tempfile
 import os
+import time
 import subprocess
 import logging
 from typing import Dict, Any, Optional
@@ -26,6 +27,10 @@ class ScreenshotAnalyzer(BaseAnalyzer):
     """
 
     def __init__(self):
+        # Enforce single-thread limit on OpenMP to prevent thread contention on throttled 0.1 vCPU
+        os.environ.setdefault("OMP_THREAD_LIMIT", "1")
+        os.environ.setdefault("OMP_NUM_THREADS", "1")
+
         # 1. Native macOS Apple Vision detection (strictly on Darwin)
         self.apple_vision_available = False
         self.vision_script_path = None
@@ -168,8 +173,21 @@ class ScreenshotAnalyzer(BaseAnalyzer):
 
     MAX_IMAGE_DIMENSION = 4096
     MAX_IMAGE_PIXELS = 16_000_000  # 16 Megapixels
-    MAX_OCR_TARGET_DIMENSION = 1400  # Optimal reading resolution for OCR
+    MAX_OCR_TARGET_DIMENSION = 1200  # Optimal reading resolution for OCR
     OCR_TIMEOUT_SECONDS = 25
+
+    @staticmethod
+    def _is_timeout_error(err: Exception) -> bool:
+        """Determines if an exception is a timeout raised by pytesseract, subprocess, or OS signal."""
+        if isinstance(err, (subprocess.TimeoutExpired, TimeoutError)):
+            return True
+        msg = str(err).lower()
+        if "timeout" in msg or "timed out" in msg:
+            return True
+        status = getattr(err, "status", None)
+        if status in (-1, -9, 137):
+            return True
+        return False
 
     def analyze(self, target: Any, **kwargs) -> Dict[str, Any]:
         """
@@ -216,6 +234,7 @@ class ScreenshotAnalyzer(BaseAnalyzer):
         extracted_text = ""
         temp_path = None
         engine_used = self.get_engine_name()
+        ocr_start_time = time.time()
 
         try:
             with tempfile.NamedTemporaryFile(suffix=f".{detected_fmt}", delete=False) as tmp:
@@ -257,7 +276,7 @@ class ScreenshotAnalyzer(BaseAnalyzer):
             elif self.is_tesseract_ready():
                 from PIL import Image, ImageOps
                 with Image.open(temp_path) as img:
-                    # Optimize memory: downscale high-resolution images to optimal OCR resolution (max 1400px)
+                    # Optimize memory: downscale high-resolution images to optimal OCR resolution (max 1200px)
                     w, h = img.size
                     if max(w, h) > self.MAX_OCR_TARGET_DIMENSION:
                         scale = self.MAX_OCR_TARGET_DIMENSION / max(w, h)
@@ -275,38 +294,44 @@ class ScreenshotAnalyzer(BaseAnalyzer):
                         pass
 
                     lang = self.get_tesseract_lang_string()
-                    # Optimized Tesseract configuration:
-                    # --oem 1: Neural LSTM engine only (faster than combined oem 3)
-                    # --psm 6: Assume uniform block of text (skips expensive page layout/multi-column segmentation)
+                    # Single-pass PSM 3 (fully automatic page segmentation without OSD):
+                    # --oem 1: Neural LSTM engine only
+                    # --psm 3: Correctly parses multi-block phone screenshots (status bar, cards, headers, buttons)
+                    #          in a single pass, avoiding costly double-pass penalties.
                     # -c preserve_interword_spaces=1: Retains URL and spacing fidelity
-                    fast_config = r"--oem 1 --psm 6 -c preserve_interword_spaces=1"
+                    tess_config = r"--oem 1 --psm 3 -c preserve_interword_spaces=1"
+
+                    elapsed_before_ocr = time.time() - ocr_start_time
+                    remaining_timeout = max(1, int(self.OCR_TIMEOUT_SECONDS - elapsed_before_ocr))
+
                     try:
                         extracted_text = self.pytesseract.image_to_string(
                             img,
                             lang=lang,
-                            config=fast_config,
-                            timeout=self.OCR_TIMEOUT_SECONDS
+                            config=tess_config,
+                            timeout=remaining_timeout
                         )
-                        # If fast PSM 6 yielded sparse text (< 10 chars), fallback to PSM 3
-                        if not extracted_text or len(extracted_text.strip()) < 10:
+                    except Exception as t_err:
+                        # Check if this error is a timeout
+                        if self._is_timeout_error(t_err):
+                            raise
+                        # If bilingual model failed (e.g. missing traineddata), fallback to eng within remaining timeout
+                        elapsed_so_far = time.time() - ocr_start_time
+                        remaining_fallback = max(1, int(self.OCR_TIMEOUT_SECONDS - elapsed_so_far))
+                        if remaining_fallback >= 2 and lang != "eng":
+                            logger.warning("Bilingual OCR extraction failed (%s), falling back to English.", t_err)
                             extracted_text = self.pytesseract.image_to_string(
                                 img,
-                                lang=lang,
-                                config=r"--oem 1 --psm 3",
-                                timeout=self.OCR_TIMEOUT_SECONDS
+                                lang="eng",
+                                config=tess_config,
+                                timeout=remaining_fallback
                             )
-                    except Exception as t_err:
-                        if "timeout" in str(t_err).lower() or isinstance(t_err, subprocess.TimeoutExpired):
+                        else:
                             raise
-                        logger.warning("Bilingual/optimized OCR extraction failed (%s), falling back to standard config.", t_err)
-                        extracted_text = self.pytesseract.image_to_string(
-                            img,
-                            timeout=self.OCR_TIMEOUT_SECONDS
-                        )
 
-        except (subprocess.TimeoutExpired, Exception) as ocr_err:
-            if "timeout" in str(ocr_err).lower() or isinstance(ocr_err, subprocess.TimeoutExpired):
-                logger.warning("OCR extraction timed out after %ds", self.OCR_TIMEOUT_SECONDS)
+        except Exception as ocr_err:
+            if self._is_timeout_error(ocr_err):
+                logger.warning("OCR extraction timed out after %ds: %s", self.OCR_TIMEOUT_SECONDS, ocr_err)
                 return {
                     "status": "failed",
                     "valid_image": True,

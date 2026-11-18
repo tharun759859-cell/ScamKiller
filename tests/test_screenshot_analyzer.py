@@ -135,19 +135,22 @@ class TestScreenshotAnalyzer(unittest.TestCase):
         mock_pytesseract.image_to_string.assert_called_once()
         _, kwargs = mock_pytesseract.image_to_string.call_args
         self.assertEqual(kwargs.get("lang"), "eng+tam")
-        self.assertIn("--psm 6", kwargs.get("config", ""))
+        self.assertIn("--psm 3", kwargs.get("config", ""))
 
-    def test_tesseract_sparse_text_fallback_to_psm3(self):
-        """Tests that if fast PSM 6 returns sparse text, analyzer falls back to PSM 3."""
+    def test_tesseract_bilingual_fallback_to_eng(self):
+        """Tests that if bilingual OCR fails with a non-timeout error, analyzer falls back to English."""
         analyzer = ScreenshotAnalyzer()
         analyzer.apple_vision_available = False
         analyzer.pytesseract_available = True
         analyzer.tesseract_binary = "/usr/bin/tesseract"
-        analyzer.available_languages = ["eng"]
+        analyzer.available_languages = ["eng", "tam"]
 
         mock_pytesseract = MagicMock()
-        # First call returns sparse text, second call returns full text
-        mock_pytesseract.image_to_string.side_effect = ["Hi", "Detailed Scam Alert Message Found Here"]
+        # First call (bilingual) fails with non-timeout error, second call (eng) succeeds
+        mock_pytesseract.image_to_string.side_effect = [
+            RuntimeError("Tesseract couldn't load any languages!"),
+            "SBI Alert: Update KYC"
+        ]
         analyzer.pytesseract = mock_pytesseract
 
         valid_png = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
@@ -156,14 +159,14 @@ class TestScreenshotAnalyzer(unittest.TestCase):
         mock_img.mode = "L"
         with patch("PIL.Image.open") as mock_img_open:
             mock_img_open.return_value.__enter__.return_value = mock_img
-            result = analyzer.analyze(valid_png, filename="sparse.png")
+            result = analyzer.analyze(valid_png, filename="fallback.png")
 
         self.assertEqual(result["status"], "completed")
         self.assertEqual(mock_pytesseract.image_to_string.call_count, 2)
-        # Second call should have used --psm 3
+        # Second call should have used lang="eng"
         second_call_kwargs = mock_pytesseract.image_to_string.call_args_list[1][1]
-        self.assertIn("--psm 3", second_call_kwargs.get("config", ""))
-        self.assertIn("Detailed Scam Alert", result["extracted_text"])
+        self.assertEqual(second_call_kwargs.get("lang"), "eng")
+        self.assertIn("SBI Alert: Update KYC", result["extracted_text"])
 
     def test_pillow_missing_makes_tesseract_unavailable(self):
         """Verifies that missing Pillow package prevents Tesseract from claiming availability."""
@@ -252,6 +255,31 @@ class TestScreenshotAnalyzer(unittest.TestCase):
         with patch("PIL.Image.open") as mock_open:
             mock_open.return_value.__enter__.return_value = mock_img
             result = analyzer.analyze(valid_png, filename="timeout_test.png")
+
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result.get("error_code"), "OCR_TIMEOUT")
+        self.assertIn("timed out", result["summary"])
+
+    def test_ocr_timeout_handling_pytesseract_runtime_error(self):
+        """Tests that pytesseract's RuntimeError('Tesseract process timeout') is caught as OCR_TIMEOUT."""
+        analyzer = ScreenshotAnalyzer()
+        analyzer.apple_vision_available = False
+        analyzer.pytesseract_available = True
+        analyzer.tesseract_binary = "/usr/bin/tesseract"
+        analyzer.pillow_available = True
+
+        mock_pytesseract = MagicMock()
+        mock_pytesseract.image_to_string.side_effect = RuntimeError("Tesseract process timeout")
+        analyzer.pytesseract = mock_pytesseract
+
+        valid_png = b"\x89PNG\r\n\x1a\n" + b"\x00" * 100
+        mock_img = MagicMock()
+        mock_img.size = (800, 600)
+        mock_img.mode = "L"
+
+        with patch("PIL.Image.open") as mock_open:
+            mock_open.return_value.__enter__.return_value = mock_img
+            result = analyzer.analyze(valid_png, filename="timeout_runtime.png")
 
         self.assertEqual(result["status"], "failed")
         self.assertEqual(result.get("error_code"), "OCR_TIMEOUT")

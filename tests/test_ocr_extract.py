@@ -48,6 +48,23 @@ class TestOcrService(unittest.TestCase):
         self.assertNotIn("threat_score", res)
         self.assertNotIn("status", res)
 
+    def test_ocr_timeout_propagates_clean_error(self):
+        """Verifies that an OCR timeout from the analyzer raises a clean ValueError in OcrService."""
+        from unittest.mock import patch, MagicMock
+        mock_analyzer = MagicMock()
+        mock_analyzer.analyze.return_value = {
+            "status": "failed",
+            "valid_image": True,
+            "summary": "OCR extraction timed out. The image could not be processed within 25 seconds.",
+            "error_code": "OCR_TIMEOUT"
+        }
+        self.service._analyzer = mock_analyzer
+        valid_png = b"\x89PNG\r\n\x1a\n" + b"\x00" * 50
+        with self.assertRaises(ValueError) as ctx:
+            self.service.extract_text(valid_png, "timeout.png")
+        self.assertIn("timed out", str(ctx.exception))
+
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -435,8 +435,8 @@ class ScanService:
                 "classification": "Caution",
                 "risk_label": "Caution",
                 "confidence": 0.5,
-                "summary": "The uploaded file could not be decoded as a valid image format (PNG, JPEG, WEBP).",
-                "explanation": "The uploaded file could not be decoded as a valid image format (PNG, JPEG, WEBP).",
+                "summary": screenshot_res.get("summary", "The uploaded file could not be decoded as a valid image format (PNG, JPEG, WEBP)."),
+                "explanation": screenshot_res.get("summary", "The uploaded file could not be decoded as a valid image format (PNG, JPEG, WEBP)."),
                 "detected_indicators": [
                     {"title": "Unreadable File", "severity": "medium", "explanation": "File data is corrupted or in an unsupported format."}
                 ],
@@ -444,6 +444,33 @@ class ScanService:
                 "recommended_actions": ["Upload a clear, standard PNG or JPEG screenshot."],
                 "recommended_steps": ["Upload a clear, standard PNG or JPEG screenshot."],
                 "limitations": ["Visual OCR could not execute on unreadable image data."],
+                "layers": {
+                    "screenshot": screenshot_res,
+                    "content": {"status": "failed"}
+                },
+                "engine_status": "Google Gemini AI OCR Pipeline",
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M")
+            }
+
+        if screenshot_res.get("status") == "failed":
+            err_summary = screenshot_res.get("summary", "OCR extraction encountered an error.")
+            return {
+                "scan_id": f"screen-{uuid.uuid4().hex[:8]}",
+                "scan_type": "screenshot",
+                "source_type": "screenshot",
+                "risk_level": "caution",
+                "classification": "Caution",
+                "risk_label": "Caution",
+                "confidence": 0.5,
+                "summary": err_summary,
+                "explanation": err_summary,
+                "detected_indicators": [
+                    {"title": "OCR Processing Incomplete", "severity": "medium", "explanation": err_summary}
+                ],
+                "why_it_matters": "If visual text cannot be extracted from a screenshot, potential threats cannot be verified.",
+                "recommended_actions": ["Upload a smaller or clearer screenshot, or paste the message text directly into the scanner."],
+                "recommended_steps": ["Upload a smaller or clearer screenshot, or paste the message text directly into the scanner."],
+                "limitations": [err_summary],
                 "layers": {
                     "screenshot": screenshot_res,
                     "content": {"status": "failed"}
