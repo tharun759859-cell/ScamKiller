@@ -24,6 +24,9 @@ class TestRestAPI(unittest.TestCase):
         data = response.get_json()
         self.assertEqual(data["status"], "healthy")
         self.assertIn("capabilities", data)
+        self.assertIn("local_ocr_engine", data["capabilities"])
+        self.assertIn("ocr_engine_name", data["capabilities"])
+        self.assertIn("ocr_languages", data["capabilities"])
         self.assertIn("privacy", data)
 
     def test_scan_text_phishing_url(self):
@@ -189,6 +192,24 @@ class TestRestAPI(unittest.TestCase):
         self.assertIn("trends", data)
         self.assertIn("data_notice", data)
         self.assertIsInstance(data["has_sufficient_data"], bool)
+
+
+    def test_extract_ocr_empty_upload(self):
+        """Tests POST /api/extract/ocr without file returns structured 400 JSON error."""
+        res = self.client.post("/api/extract/ocr", data={})
+        self.assertEqual(res.status_code, 400)
+        data = res.get_json()
+        self.assertIn("error", data)
+        self.assertIn("No screenshot file provided", data["error"])
+
+    def test_extract_ocr_corrupt_file(self):
+        """Tests POST /api/extract/ocr with corrupted non-image file returns structured 400 JSON error."""
+        data = {"image": (io.BytesIO(b"NOT_A_REAL_IMAGE"), "bad.png")}
+        res = self.client.post("/api/extract/ocr", data=data, content_type="multipart/form-data")
+        self.assertEqual(res.status_code, 400)
+        resp_data = res.get_json()
+        self.assertIn("error", resp_data)
+        self.assertIn("Image validation failed", resp_data["error"])
 
 
 if __name__ == "__main__":

@@ -166,6 +166,11 @@ class ScreenshotAnalyzer(BaseAnalyzer):
             return "tam"
         return "eng"
 
+    MAX_IMAGE_DIMENSION = 4096
+    MAX_IMAGE_PIXELS = 16_000_000  # 16 Megapixels
+    MAX_OCR_TARGET_DIMENSION = 1600  # Optimal reading resolution for OCR
+    OCR_TIMEOUT_SECONDS = 25
+
     def analyze(self, target: Any, **kwargs) -> Dict[str, Any]:
         """
         Analyzes an uploaded image bytes buffer.
@@ -217,6 +222,31 @@ class ScreenshotAnalyzer(BaseAnalyzer):
                 tmp.write(file_bytes)
                 temp_path = tmp.name
 
+            # Pre-validate image dimensions using Pillow header read before full decoding
+            if self.pillow_available:
+                from PIL import Image, UnidentifiedImageError
+                try:
+                    with Image.open(temp_path) as pre_check:
+                        if hasattr(pre_check, "size") and isinstance(pre_check.size, (tuple, list)) and len(pre_check.size) == 2:
+                            w, h = pre_check.size
+                            total_pixels = w * h
+                            if w > self.MAX_IMAGE_DIMENSION or h > self.MAX_IMAGE_DIMENSION or total_pixels > self.MAX_IMAGE_PIXELS:
+                                return {
+                                    "status": "failed",
+                                    "valid_image": False,
+                                    "score": 0,
+                                    "summary": f"Image dimensions ({w}x{h}, {total_pixels} pixels) exceed safe limit of 16 megapixels (4096px).",
+                                    "extracted_text": "",
+                                    "indicators": ["Image resolution exceeds safety limits (decompression bomb protection)"],
+                                    "ocr_engine_available": self.is_ocr_available(),
+                                    "ocr_engine": engine_used,
+                                    "detected_format": detected_fmt,
+                                    "error_code": "IMAGE_TOO_LARGE"
+                                }
+                except (UnidentifiedImageError, OSError):
+                    # Truncated or mock image streams continue to engine
+                    pass
+
             if self.apple_vision_available and self.vision_script_path:
                 cmd = ["/usr/bin/osascript", "-l", "JavaScript", self.vision_script_path, temp_path]
                 res = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
@@ -227,14 +257,49 @@ class ScreenshotAnalyzer(BaseAnalyzer):
             elif self.is_tesseract_ready():
                 from PIL import Image
                 with Image.open(temp_path) as img:
+                    # Optimize memory: downscale high-resolution images to optimal OCR resolution (max 1600px)
+                    w, h = img.size
+                    if max(w, h) > self.MAX_OCR_TARGET_DIMENSION:
+                        scale = self.MAX_OCR_TARGET_DIMENSION / max(w, h)
+                        new_size = (max(1, int(w * scale)), max(1, int(h * scale)))
+                        img = img.resize(new_size, Image.Resampling.BILINEAR)
+
+                    # Optimize memory: convert to 8-bit grayscale to cut bitmap memory by 75%
+                    if img.mode != "L":
+                        img = img.convert("L")
+
                     lang = self.get_tesseract_lang_string()
                     try:
-                        extracted_text = self.pytesseract.image_to_string(img, lang=lang)
+                        extracted_text = self.pytesseract.image_to_string(
+                            img,
+                            lang=lang,
+                            timeout=self.OCR_TIMEOUT_SECONDS
+                        )
                     except Exception as t_err:
-                        logger.warning("Bilingual OCR extraction failed (%s), falling back to default.", t_err)
-                        extracted_text = self.pytesseract.image_to_string(img)
+                        if "timeout" in str(t_err).lower() or isinstance(t_err, subprocess.TimeoutExpired):
+                            raise
+                        logger.warning("Bilingual OCR extraction failed (%s), falling back to single language.", t_err)
+                        extracted_text = self.pytesseract.image_to_string(
+                            img,
+                            timeout=self.OCR_TIMEOUT_SECONDS
+                        )
 
-        except Exception as ocr_err:
+        except (subprocess.TimeoutExpired, Exception) as ocr_err:
+            if "timeout" in str(ocr_err).lower() or isinstance(ocr_err, subprocess.TimeoutExpired):
+                logger.warning("OCR extraction timed out after %ds", self.OCR_TIMEOUT_SECONDS)
+                return {
+                    "status": "failed",
+                    "valid_image": True,
+                    "score": 0,
+                    "summary": f"OCR extraction timed out. The image could not be processed within {self.OCR_TIMEOUT_SECONDS} seconds.",
+                    "extracted_text": "",
+                    "indicators": ["OCR processing timed out"],
+                    "ocr_engine_available": True,
+                    "ocr_engine": engine_used,
+                    "detected_format": detected_fmt,
+                    "error_code": "OCR_TIMEOUT"
+                }
+
             logger.error("OCR extraction encountered an error with engine '%s': %s", engine_used, str(ocr_err))
             return {
                 "status": "failed",
@@ -253,6 +318,8 @@ class ScreenshotAnalyzer(BaseAnalyzer):
                     os.remove(temp_path)
                 except Exception:
                     pass
+            import gc
+            gc.collect()
 
         cleaned_text = extracted_text.strip()
         if not cleaned_text:

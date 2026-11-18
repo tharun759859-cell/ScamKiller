@@ -36,5 +36,5 @@ COPY . .
 ENV PORT=5001
 EXPOSE 5001
 
-# Launch production WSGI Gunicorn server
-CMD ["sh", "-c", "exec gunicorn --bind 0.0.0.0:${PORT:-5001} --workers 2 --timeout 120 backend.app:app"]
+# Launch production WSGI Gunicorn server (1 worker + 4 threads to fit within Render Free 512MB limit)
+CMD ["sh", "-c", "exec gunicorn --bind 0.0.0.0:${PORT:-5001} --workers 1 --threads 4 --timeout 120 backend.app:app"]

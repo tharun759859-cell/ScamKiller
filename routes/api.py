@@ -27,6 +27,8 @@ transcription_service = TranscriptionService()
 def health_check():
     """Health status and engine availability information."""
     ocr_available = scan_service.screenshot_analyzer.is_ocr_available()
+    ocr_engine = scan_service.screenshot_analyzer.get_engine_name()
+    ocr_languages = getattr(scan_service.screenshot_analyzer, "get_available_languages", lambda: [])()
     return jsonify({
         "status": "healthy",
         "service": "SCAM KILLER — Smart Scam & Link Detector Backend",
@@ -40,6 +42,8 @@ def health_check():
             "url_structure_analysis": "active",
             "trusted_intelligence": "active",
             "local_ocr_engine": "active" if ocr_available else "unavailable",
+            "ocr_engine_name": ocr_engine,
+            "ocr_languages": ocr_languages,
             "speech_transcription_engine": "active" if transcription_service.is_engine_available() else "unavailable",
             "pdf_report_engine": "active" if ReportService.is_available() else "unavailable"
         },
