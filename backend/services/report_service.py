@@ -38,10 +38,38 @@ class ReportService:
     SLATE_LIGHT = colors.HexColor("#f8fafc")
     BORDER_COLOR = colors.HexColor("#e2e8f0")
 
+    _styles_cache = None
+
     @classmethod
     def is_available(cls) -> bool:
         """Returns True if reportlab is installed."""
         return REPORTLAB_AVAILABLE
+
+    @classmethod
+    def _get_styles(cls) -> Dict[str, Any]:
+        """Initializes and caches ReportLab paragraph styles once for high-throughput reuse."""
+        if cls._styles_cache is not None:
+            return cls._styles_cache
+
+        base_styles = getSampleStyleSheet()
+        normal = base_styles["Normal"]
+        h2 = base_styles["Heading2"]
+
+        cls._styles_cache = {
+            "title": ParagraphStyle("DocTitle", parent=normal, fontName="Helvetica-Bold", fontSize=20, leading=24, textColor=colors.white),
+            "subtitle": ParagraphStyle("DocSubtitle", parent=normal, fontName="Helvetica", fontSize=10, leading=13, textColor=colors.HexColor("#86efac")),
+            "h2": ParagraphStyle("SectionH2", parent=h2, fontName="Helvetica-Bold", fontSize=12, leading=16, textColor=cls.DARK_GREEN, spaceBefore=10, spaceAfter=4),
+            "body": ParagraphStyle("BodyDark", parent=normal, fontName="Helvetica", fontSize=9.5, leading=14, textColor=cls.SLATE_DARK),
+            "badge": ParagraphStyle("BadgeStyle", parent=normal, fontName="Helvetica-Bold", fontSize=11, leading=14, textColor=colors.white, alignment=1),
+            "meta_label": ParagraphStyle("MetaLabel", parent=normal, fontName="Helvetica-Bold", fontSize=8.5, leading=11, textColor=cls.SLATE_MUTED),
+            "meta_val": ParagraphStyle("MetaVal", parent=normal, fontName="Helvetica", fontSize=9, leading=12, textColor=cls.SLATE_DARK),
+            "bullet": ParagraphStyle("Bullet", parent=normal, fontName="Helvetica-Bold", textColor=cls.ROSE_RED),
+            "step_num": ParagraphStyle("StepNum", parent=normal, fontName="Helvetica-Bold", textColor=cls.EMERALD_GREEN),
+            "dash": ParagraphStyle("Dash", parent=normal, fontName="Helvetica", textColor=cls.SLATE_MUTED),
+            "uncertainty": ParagraphStyle("UncertaintyText", parent=normal, fontName="Helvetica-Oblique", fontSize=9, leading=13, textColor=cls.SLATE_MUTED),
+            "footer": ParagraphStyle("FooterText", parent=normal, fontName="Helvetica", fontSize=7.5, leading=10, textColor=cls.SLATE_MUTED),
+        }
+        return cls._styles_cache
 
     @classmethod
     def generate_pdf_report(cls, report_data: Dict[str, Any]) -> bytes:
@@ -62,74 +90,20 @@ class ReportService:
             bottomMargin=36
         )
 
-        styles = getSampleStyleSheet()
+        styles = cls._get_styles()
 
-        # Custom Typography Styles
-        title_style = ParagraphStyle(
-            "DocTitle",
-            parent=styles["Normal"],
-            fontName="Helvetica-Bold",
-            fontSize=20,
-            leading=24,
-            textColor=colors.white
-        )
-
-        subtitle_style = ParagraphStyle(
-            "DocSubtitle",
-            parent=styles["Normal"],
-            fontName="Helvetica",
-            fontSize=10,
-            leading=13,
-            textColor=colors.HexColor("#86efac")
-        )
-
-        h2_style = ParagraphStyle(
-            "SectionH2",
-            parent=styles["Heading2"],
-            fontName="Helvetica-Bold",
-            fontSize=12,
-            leading=16,
-            textColor=cls.DARK_GREEN,
-            spaceBefore=10,
-            spaceAfter=4
-        )
-
-        body_style = ParagraphStyle(
-            "BodyDark",
-            parent=styles["Normal"],
-            fontName="Helvetica",
-            fontSize=9.5,
-            leading=14,
-            textColor=cls.SLATE_DARK
-        )
-
-        badge_style = ParagraphStyle(
-            "BadgeStyle",
-            parent=styles["Normal"],
-            fontName="Helvetica-Bold",
-            fontSize=11,
-            leading=14,
-            textColor=colors.white,
-            alignment=1
-        )
-
-        meta_label_style = ParagraphStyle(
-            "MetaLabel",
-            parent=styles["Normal"],
-            fontName="Helvetica-Bold",
-            fontSize=8.5,
-            leading=11,
-            textColor=cls.SLATE_MUTED
-        )
-
-        meta_val_style = ParagraphStyle(
-            "MetaVal",
-            parent=styles["Normal"],
-            fontName="Helvetica",
-            fontSize=9,
-            leading=12,
-            textColor=cls.SLATE_DARK
-        )
+        title_style = styles["title"]
+        subtitle_style = styles["subtitle"]
+        h2_style = styles["h2"]
+        body_style = styles["body"]
+        badge_style = styles["badge"]
+        meta_label_style = styles["meta_label"]
+        meta_val_style = styles["meta_val"]
+        bullet_style = styles["bullet"]
+        step_num_style = styles["step_num"]
+        dash_style = styles["dash"]
+        uncertainty_style = styles["uncertainty"]
+        footer_style = styles["footer"]
 
         story = []
 
@@ -229,7 +203,7 @@ class ReportService:
                 ind_exp = ind.get("explanation", "") if isinstance(ind, dict) else ""
                 full_text = f"<b>{ind_text}</b>: {ind_exp}" if ind_exp else ind_text
                 ind_rows.append([
-                    Paragraph("•", ParagraphStyle("Bullet", parent=styles["Normal"], fontName="Helvetica-Bold", textColor=cls.ROSE_RED)),
+                    Paragraph("•", bullet_style),
                     Paragraph(full_text, body_style)
                 ])
             ind_table = Table(ind_rows, colWidths=[20, 512])
@@ -267,7 +241,7 @@ class ReportService:
         step_rows = []
         for i, step in enumerate(steps, 1):
             step_rows.append([
-                Paragraph(f"{i}.", ParagraphStyle("StepNum", parent=styles["Normal"], fontName="Helvetica-Bold", textColor=cls.EMERALD_GREEN)),
+                Paragraph(f"{i}.", step_num_style),
                 Paragraph(step, body_style)
             ])
         step_table = Table(step_rows, colWidths=[20, 512])
@@ -285,8 +259,8 @@ class ReportService:
             unc_rows = []
             for u in uncertainties:
                 unc_rows.append([
-                    Paragraph("–", ParagraphStyle("Dash", parent=styles["Normal"], fontName="Helvetica", textColor=cls.SLATE_MUTED)),
-                    Paragraph(u, ParagraphStyle("UncertaintyText", parent=styles["Normal"], fontName="Helvetica-Oblique", fontSize=9, leading=13, textColor=cls.SLATE_MUTED))
+                    Paragraph("–", dash_style),
+                    Paragraph(u, uncertainty_style)
                 ])
             unc_table = Table(unc_rows, colWidths=[20, 512])
             unc_table.setStyle(TableStyle([
@@ -303,7 +277,7 @@ class ReportService:
             "card numbers, and secret tokens are sanitized prior to telemetry recording. This assessment represents AI-powered "
             "risk analysis and does not constitute formal legal counsel."
         )
-        story.append(Paragraph(disclaimer, ParagraphStyle("FooterText", parent=styles["Normal"], fontName="Helvetica", fontSize=7.5, leading=10, textColor=cls.SLATE_MUTED)))
+        story.append(Paragraph(disclaimer, footer_style))
 
         # Build document
         doc.build(story)

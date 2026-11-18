@@ -215,20 +215,33 @@ class ScamKillerScanner {
     return data;
   }
 
-  // Submits conversational query to AI Advisory Chat endpoint
+  // Submits conversational query to AI Advisory Chat endpoint with 30s timeout
   async sendChatMessage(messages) {
     if (!messages || !messages.length) {
       throw new Error("No chat message provided.");
     }
 
-    const response = await fetch(`${this.apiBase}/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages })
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    const data = await this._parseResponse(response, "AI Advisory Chat failed");
-    return data;
+    try {
+      const response = await fetch(`${this.apiBase}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages }),
+        signal: controller.signal
+      });
+
+      const data = await this._parseResponse(response, "AI Advisory Chat failed");
+      return data;
+    } catch (err) {
+      if (err.name === "AbortError") {
+        throw new Error("The AI Advisory service took too long to respond (30s timeout). Please check your connection or retry in a moment.");
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   // Generates and triggers browser download of an authentic ReportLab PDF report

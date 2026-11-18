@@ -341,17 +341,18 @@ class AIService:
     def chat_advisory(self, messages: List[Dict[str, str]]) -> Dict[str, Any]:
         """
         Handles interactive advisory conversation turns via Google Gemini API.
+        Optimized for low latency, sharp advice, and resilient failover.
         """
         if not messages or not isinstance(messages, list):
             raise ValueError("Chat messages must be a non-empty list of message objects.")
 
-        # Filter and sanitize message history
+        # Filter and sanitize message history — limit to last 6 turns to optimize latency and prompt tokens
         sanitized_history = []
-        for m in messages[-10:]:
+        for m in messages[-6:]:
             role = m.get("role", "user")
             content = str(m.get("content", "")).strip()
             if role in ("user", "assistant") and content:
-                sanitized_history.append({"role": role, "content": content[:2000]})
+                sanitized_history.append({"role": role, "content": content[:1500]})
 
         if not sanitized_history:
             raise ValueError("No valid message content provided.")
@@ -373,8 +374,9 @@ class AIService:
 
         client = self._get_client()
 
+        # Prioritize self.model, followed by standard high-throughput models
         candidate_models = [self.model]
-        for fb in ["gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-3.5-flash-lite"]:
+        for fb in ["gemini-2.5-flash", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-3.1-flash-lite"]:
             if fb not in candidate_models:
                 candidate_models.append(fb)
 
@@ -396,7 +398,8 @@ class AIService:
 
                 config = types.GenerateContentConfig(
                     system_instruction=ADVISORY_CHAT_SYSTEM_PROMPT,
-                    temperature=0.5,
+                    temperature=0.4,
+                    max_output_tokens=1024,
                 )
 
                 response = client.models.generate_content(
@@ -426,7 +429,7 @@ class AIService:
                         f"Transient Gemini API response in chat on {current_model} (attempt {attempt+1}/{len(candidate_models)}): {exc}. "
                         f"Failing over to {candidate_models[attempt+1]}..."
                     )
-                    time.sleep(0.5)
+                    time.sleep(0.2)
                     continue
                 elif attempt < len(candidate_models) - 1 and code == 404:
                     continue

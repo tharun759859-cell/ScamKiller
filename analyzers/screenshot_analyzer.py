@@ -168,7 +168,7 @@ class ScreenshotAnalyzer(BaseAnalyzer):
 
     MAX_IMAGE_DIMENSION = 4096
     MAX_IMAGE_PIXELS = 16_000_000  # 16 Megapixels
-    MAX_OCR_TARGET_DIMENSION = 1600  # Optimal reading resolution for OCR
+    MAX_OCR_TARGET_DIMENSION = 1400  # Optimal reading resolution for OCR
     OCR_TIMEOUT_SECONDS = 25
 
     def analyze(self, target: Any, **kwargs) -> Dict[str, Any]:
@@ -255,9 +255,9 @@ class ScreenshotAnalyzer(BaseAnalyzer):
                 else:
                     raise RuntimeError(f"Apple Vision OCR execution failed: {res.stderr}")
             elif self.is_tesseract_ready():
-                from PIL import Image
+                from PIL import Image, ImageOps
                 with Image.open(temp_path) as img:
-                    # Optimize memory: downscale high-resolution images to optimal OCR resolution (max 1600px)
+                    # Optimize memory: downscale high-resolution images to optimal OCR resolution (max 1400px)
                     w, h = img.size
                     if max(w, h) > self.MAX_OCR_TARGET_DIMENSION:
                         scale = self.MAX_OCR_TARGET_DIMENSION / max(w, h)
@@ -268,17 +268,37 @@ class ScreenshotAnalyzer(BaseAnalyzer):
                     if img.mode != "L":
                         img = img.convert("L")
 
+                    # Contrast normalization to accelerate Otsu thresholding
+                    try:
+                        img = ImageOps.autocontrast(img)
+                    except Exception:
+                        pass
+
                     lang = self.get_tesseract_lang_string()
+                    # Optimized Tesseract configuration:
+                    # --oem 1: Neural LSTM engine only (faster than combined oem 3)
+                    # --psm 6: Assume uniform block of text (skips expensive page layout/multi-column segmentation)
+                    # -c preserve_interword_spaces=1: Retains URL and spacing fidelity
+                    fast_config = r"--oem 1 --psm 6 -c preserve_interword_spaces=1"
                     try:
                         extracted_text = self.pytesseract.image_to_string(
                             img,
                             lang=lang,
+                            config=fast_config,
                             timeout=self.OCR_TIMEOUT_SECONDS
                         )
+                        # If fast PSM 6 yielded sparse text (< 10 chars), fallback to PSM 3
+                        if not extracted_text or len(extracted_text.strip()) < 10:
+                            extracted_text = self.pytesseract.image_to_string(
+                                img,
+                                lang=lang,
+                                config=r"--oem 1 --psm 3",
+                                timeout=self.OCR_TIMEOUT_SECONDS
+                            )
                     except Exception as t_err:
                         if "timeout" in str(t_err).lower() or isinstance(t_err, subprocess.TimeoutExpired):
                             raise
-                        logger.warning("Bilingual OCR extraction failed (%s), falling back to single language.", t_err)
+                        logger.warning("Bilingual/optimized OCR extraction failed (%s), falling back to standard config.", t_err)
                         extracted_text = self.pytesseract.image_to_string(
                             img,
                             timeout=self.OCR_TIMEOUT_SECONDS

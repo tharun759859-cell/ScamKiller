@@ -1425,7 +1425,13 @@ document.addEventListener("DOMContentLoaded", () => {
       chatConversationHistory.push({ role: "user", content: q });
       chatInputText.value = "";
 
-      if (chatSubmitBtn) chatSubmitBtn.disabled = true;
+      let origBtnHtml = "";
+      if (chatSubmitBtn) {
+        chatSubmitBtn.disabled = true;
+        origBtnHtml = chatSubmitBtn.innerHTML;
+        chatSubmitBtn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">refresh</span>`;
+      }
+      chatInputText.disabled = true;
       const typingId = appendChatTypingIndicator();
 
       try {
@@ -1433,20 +1439,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const typingEl = document.getElementById(typingId);
         if (typingEl) typingEl.remove();
 
-        if (response && response.reply) {
-          appendChatMessage("ai", response.reply);
-          chatConversationHistory.push({ role: "assistant", content: response.reply });
+        const reply = response && (response.reply || response.content);
+        if (reply && String(reply).trim()) {
+          appendChatMessage("ai", String(reply).trim());
+          chatConversationHistory.push({ role: "assistant", content: String(reply).trim() });
         } else {
-          appendChatMessage("ai", "I'm sorry, I could not generate a response. Please try again.", true);
+          appendChatMessage("ai", "I'm sorry, I could not generate a response. Please try asking a specific question or retry in a moment.", true);
         }
       } catch (err) {
         const typingEl = document.getElementById(typingId);
         if (typingEl) typingEl.remove();
         console.error("AI chat error:", err);
-        appendChatMessage("ai", `Security Advisory Notice: ${err.message}`, true);
+        appendChatMessage("ai", `Security Advisory Notice: ${err.message}\n\nEmergency Guidance: If you believe you are experiencing active fraud, immediately contact your bank to freeze transactions and report to cybercrime.gov.in (Helpline: 1930).`, true);
       } finally {
-        if (chatSubmitBtn) chatSubmitBtn.disabled = false;
-        if (chatInputText) chatInputText.focus();
+        if (chatSubmitBtn) {
+          chatSubmitBtn.disabled = false;
+          if (origBtnHtml) chatSubmitBtn.innerHTML = origBtnHtml;
+        }
+        chatInputText.disabled = false;
+        chatInputText.focus();
       }
     });
   }

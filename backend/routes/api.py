@@ -373,8 +373,16 @@ def download_pdf_report():
 
     data = request.get_json(silent=True) or {}
     try:
+        # Re-use existing scan result from SQLite if only scan_id/scanId is provided
+        sid = data.get("scan_id") or data.get("scanId")
+        if sid and ("risk_level" not in data and "explanation" not in data and "summary" not in data):
+            from services.history_service import HistoryService
+            existing = HistoryService.get_scan_by_id(str(sid))
+            if existing and existing.get("fullReport"):
+                data = existing["fullReport"]
+
         pdf_bytes = ReportService.generate_pdf_report(data)
-        scan_id = data.get("scan_id", "scam_killer_report")
+        scan_id = data.get("scan_id", sid or "scam_killer_report")
         response = make_response(pdf_bytes)
         response.headers["Content-Type"] = "application/pdf"
         response.headers["Content-Disposition"] = f'attachment; filename="SCAM_KILLER_Report_{scan_id}.pdf"'

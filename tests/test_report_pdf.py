@@ -45,8 +45,35 @@ class TestReportService(unittest.TestCase):
             "detected_indicators": [],
             "recommended_steps": ["Maintain standard digital security hygiene."]
         }
-        pdf_bytes = ReportService.generate_pdf_report(sample_data)
-        self.assertTrue(pdf_bytes.startswith(b"%PDF"))
+    def test_cached_styles_singleton(self):
+        """Verifies that ReportService._get_styles() reuses the pre-cached style dictionary."""
+        styles1 = ReportService._get_styles()
+        styles2 = ReportService._get_styles()
+        self.assertIs(styles1, styles2)
+        self.assertIn("title", styles1)
+        self.assertIn("bullet", styles1)
+        self.assertIn("step_num", styles1)
+
+    def test_high_volume_generation_speed(self):
+        """Tests that generating 20 PDF reports consecutively is fast (averaging < 30ms)."""
+        import time
+        sample_data = {
+            "scan_id": "SK-BENCH-001",
+            "risk_level": "suspicious",
+            "submitted_item": "Urgent KYC Verification Alert",
+            "explanation": "High risk account compromise lure.",
+            "detected_indicators": [{"title": "Phishing Link"}, {"title": "Fake Brand Authority"}],
+            "why_it_matters": "Credentials may be harvested.",
+            "recommended_steps": ["Do not click", "Verify with bank"]
+        }
+        start = time.perf_counter()
+        for _ in range(20):
+            pdf = ReportService.generate_pdf_report(sample_data)
+            self.assertTrue(pdf.startswith(b"%PDF"))
+        elapsed = time.perf_counter() - start
+        avg_ms = (elapsed / 20) * 1000
+        # Average must be well below 50ms
+        self.assertLess(avg_ms, 50.0)
 
 
 if __name__ == "__main__":
