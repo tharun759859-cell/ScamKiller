@@ -1,58 +1,170 @@
 """
 SCAM KILLER — Layer 3: Screenshot Text Analysis
 Extracts visible text from user-uploaded screenshots using local OCR
+(Apple Vision Framework on macOS, or Tesseract OCR on Linux/other platforms)
 and coordinates downstream analysis with Layer 1 (Content) and Layer 2 (URL).
 """
 
+import sys
 import shutil
 import tempfile
 import os
 import subprocess
+import logging
 from typing import Dict, Any, Optional
 from .base import BaseAnalyzer
 from security.validator import InputValidator
+
+logger = logging.getLogger("scam_killer.ocr")
 
 
 class ScreenshotAnalyzer(BaseAnalyzer):
     """
     Validates uploaded images and safely extracts visible text via local OCR
-    (Apple Vision Framework on macOS, or Tesseract OCR on other platforms),
+    (Apple Vision Framework on macOS, or Tesseract OCR on Linux/Docker),
     gracefully reporting status when unavailable.
     """
 
     def __init__(self):
-        # 1. Check native macOS Apple Vision availability via osascript and vision_ocr.js
+        # 1. Native macOS Apple Vision detection (strictly on Darwin)
         self.apple_vision_available = False
-        self.vision_script_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "tools",
-            "vision_ocr.js"
-        )
-        if os.path.exists("/usr/bin/osascript") and os.path.exists(self.vision_script_path):
-            self.apple_vision_available = True
+        self.vision_script_path = None
+        if sys.platform == "darwin" and os.path.exists("/usr/bin/osascript"):
+            script_candidates = [
+                os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools", "vision_ocr.js"),
+                os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "tools", "vision_ocr.js"),
+                os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "tools", "vision_ocr.js"),
+                os.path.join(os.getcwd(), "tools", "vision_ocr.js")
+            ]
+            for candidate in script_candidates:
+                if os.path.exists(candidate):
+                    self.vision_script_path = os.path.abspath(candidate)
+                    self.apple_vision_available = True
+                    break
 
-        # 2. Check system Tesseract binary & python package availability
-        self.tesseract_binary = shutil.which("tesseract")
+        # 2. System Tesseract executable detection (PATH search + standard Linux paths)
+        self.tesseract_binary = self._find_tesseract_binary()
+
+        # 3. Python package dependencies (pytesseract and Pillow)
         self.pytesseract_available = False
+        self.pytesseract = None
+        self.pillow_available = False
+        self.available_languages = []
+
+        # Check Pillow
+        try:
+            from PIL import Image
+            self.pillow_available = True
+        except ImportError as pil_err:
+            self.pillow_available = False
+            logger.warning("Pillow (PIL) is not installed: %s", pil_err)
+        except Exception as pil_err:
+            self.pillow_available = False
+            logger.warning("Failed to initialize Pillow: %s", pil_err)
+
+        # Check pytesseract
         try:
             import pytesseract
             self.pytesseract = pytesseract
-            self.pytesseract_available = bool(self.tesseract_binary)
-        except ImportError:
+            if self.tesseract_binary:
+                self.pytesseract.pytesseract.tesseract_cmd = self.tesseract_binary
+                self.pytesseract_available = True
+                try:
+                    self.available_languages = self.pytesseract.get_languages()
+                except Exception as lang_err:
+                    logger.warning("Could not probe Tesseract languages (%s). Defaulting to ['eng'].", lang_err)
+                    self.available_languages = ["eng"]
+            else:
+                self.pytesseract_available = False
+        except ImportError as pytess_err:
             self.pytesseract = None
             self.pytesseract_available = False
+            logger.warning("pytesseract Python package is not installed: %s", pytess_err)
+        except Exception as pytess_err:
+            self.pytesseract = None
+            self.pytesseract_available = False
+            logger.warning("Failed to initialize pytesseract: %s", pytess_err)
+
+        # Log active OCR engine state securely (no sensitive data)
+        self._log_initialization_status()
+
+    def _find_tesseract_binary(self) -> Optional[str]:
+        """Locates the tesseract executable via PATH or standard Linux system locations."""
+        bin_path = shutil.which("tesseract")
+        if bin_path and os.path.exists(bin_path):
+            return bin_path
+
+        candidates = [
+            "/usr/bin/tesseract",
+            "/usr/local/bin/tesseract",
+            "/bin/tesseract",
+            "/opt/homebrew/bin/tesseract"
+        ]
+        for candidate in candidates:
+            if os.path.exists(candidate) and os.access(candidate, os.X_OK):
+                return candidate
+        return None
+
+    def _log_initialization_status(self):
+        """Logs diagnostic status securely without leaking secrets or data."""
+        if self.apple_vision_available:
+            logger.info("OCR Engine initialized: Apple Vision Framework (macOS native).")
+        elif self.is_tesseract_ready():
+            logger.info(
+                "OCR Engine initialized: Tesseract at '%s' (Languages: %s).",
+                self.tesseract_binary,
+                self.get_available_languages()
+            )
+        else:
+            reasons = []
+            if not self.apple_vision_available and sys.platform == "darwin":
+                reasons.append("macOS Apple Vision script missing")
+            if not self.tesseract_binary:
+                reasons.append("Tesseract system executable not found")
+            if not self.pytesseract_available:
+                reasons.append("Python pytesseract package unavailable")
+            if not self.pillow_available:
+                reasons.append("Python Pillow package unavailable")
+            logger.warning("Local OCR engine unavailable. Diagnostics: %s", ", ".join(reasons))
+
+    def is_tesseract_ready(self) -> bool:
+        """Returns True if Linux/system Tesseract executable and all Python libraries are ready."""
+        return bool(
+            self.tesseract_binary
+            and self.pytesseract_available
+            and self.pillow_available
+        )
 
     def is_ocr_available(self) -> bool:
         """Returns True if native Apple Vision or Tesseract OCR is available."""
-        return self.apple_vision_available or (self.pytesseract_available and bool(self.tesseract_binary))
+        return self.apple_vision_available or self.is_tesseract_ready()
 
     def get_engine_name(self) -> str:
         """Returns the identifier of the active local OCR engine."""
         if self.apple_vision_available:
             return "apple_vision"
-        elif self.pytesseract_available and bool(self.tesseract_binary):
+        elif self.is_tesseract_ready():
             return "tesseract"
         return "none"
+
+    def get_available_languages(self) -> list:
+        """Returns list of active OCR languages."""
+        if self.apple_vision_available:
+            return ["eng", "tam", "multilingual"]
+        if self.is_tesseract_ready() and self.available_languages:
+            return [l for l in self.available_languages if l != "osd"]
+        return []
+
+    def get_tesseract_lang_string(self) -> str:
+        """Determines optimal Tesseract language argument based on installed packs."""
+        installed = self.available_languages or []
+        has_tam = "tam" in installed
+        has_eng = "eng" in installed
+        if has_tam and has_eng:
+            return "eng+tam"
+        elif has_tam:
+            return "tam"
+        return "eng"
 
     def analyze(self, target: Any, **kwargs) -> Dict[str, Any]:
         """
@@ -68,6 +180,7 @@ class ScreenshotAnalyzer(BaseAnalyzer):
         if not is_valid:
             return {
                 "status": "failed",
+                "valid_image": False,
                 "score": 0,
                 "summary": f"Image validation failed: {err_msg}",
                 "extracted_text": "",
@@ -80,6 +193,7 @@ class ScreenshotAnalyzer(BaseAnalyzer):
         if not self.is_ocr_available():
             return {
                 "status": "unavailable",
+                "valid_image": True,
                 "score": 0,
                 "summary": (
                     f"Uploaded image ({detected_fmt.upper()}) validated successfully. "
@@ -103,21 +217,28 @@ class ScreenshotAnalyzer(BaseAnalyzer):
                 tmp.write(file_bytes)
                 temp_path = tmp.name
 
-            if self.apple_vision_available:
+            if self.apple_vision_available and self.vision_script_path:
                 cmd = ["/usr/bin/osascript", "-l", "JavaScript", self.vision_script_path, temp_path]
                 res = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
                 if res.returncode == 0:
                     extracted_text = res.stdout
                 else:
                     raise RuntimeError(f"Apple Vision OCR execution failed: {res.stderr}")
-            elif self.pytesseract_available and self.tesseract_binary:
+            elif self.is_tesseract_ready():
                 from PIL import Image
                 with Image.open(temp_path) as img:
-                    extracted_text = self.pytesseract.image_to_string(img)
+                    lang = self.get_tesseract_lang_string()
+                    try:
+                        extracted_text = self.pytesseract.image_to_string(img, lang=lang)
+                    except Exception as t_err:
+                        logger.warning("Bilingual OCR extraction failed (%s), falling back to default.", t_err)
+                        extracted_text = self.pytesseract.image_to_string(img)
 
         except Exception as ocr_err:
+            logger.error("OCR extraction encountered an error with engine '%s': %s", engine_used, str(ocr_err))
             return {
                 "status": "failed",
+                "valid_image": True,
                 "score": 0,
                 "summary": f"OCR extraction encountered an error: {str(ocr_err)}",
                 "extracted_text": "",
@@ -137,6 +258,7 @@ class ScreenshotAnalyzer(BaseAnalyzer):
         if not cleaned_text:
             return {
                 "status": "passed",
+                "valid_image": True,
                 "score": 0,
                 "summary": "OCR completed: No readable text detected inside the uploaded screenshot.",
                 "extracted_text": "",
@@ -147,10 +269,12 @@ class ScreenshotAnalyzer(BaseAnalyzer):
             }
 
         word_count = len(cleaned_text.split())
+        engine_label = "Apple Vision" if engine_used == "apple_vision" else "Tesseract OCR"
         return {
             "status": "completed",
+            "valid_image": True,
             "score": 10,
-            "summary": f"Apple Vision OCR extracted {word_count} words from screenshot.",
+            "summary": f"{engine_label} extracted {word_count} words from screenshot.",
             "extracted_text": cleaned_text,
             "indicators": [f"Extracted visible text from image ({word_count} words) via {engine_used}"],
             "ocr_engine_available": True,
