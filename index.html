@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCAM KILLER — Smart Scam &amp; Link Detector</title>
+
+  <!-- Google Fonts: Inter / Geist + Material Symbols Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            forest: {
+              950: '#061710',
+              900: '#092318',
+              800: '#0e3323',
+              700: '#14422e',
+              600: '#1a543b',
+              500: '#22694a',
+            },
+            emerald: {
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            }
+          },
+          fontFamily: {
+            sans: ['Geist', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="bg-[#f4f7f5] text-slate-900 min-h-screen flex antialiased selection:bg-emerald-500/20 selection:text-emerald-900">
+
+  <!-- LEFT SIDEBAR (Dark Forest Green) -->
+  <aside id="mainSidebar" class="fixed top-0 left-0 h-screen w-64 bg-[#092318] border-r border-[#154631] flex flex-col justify-between z-50 -translate-x-full lg:translate-x-0 transition-transform duration-200">
+    <!-- Top Part of Sidebar -->
+    <div class="p-4 flex flex-col">
+      <!-- Brand Logo -->
+      <a href="#" data-nav-target="overview" class="flex items-center gap-3 px-2 py-3 mb-5 group">
+        <!-- Glowing Shield Logo Icon -->
+        <div class="relative w-10 h-10 flex items-center justify-center shrink-0">
+          <svg class="w-10 h-10 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4" stroke-width="2.5" />
+          </svg>
+        </div>
+        <!-- Logo Text: SCAM (white) KILLER (emerald green) -->
+        <div class="flex flex-col leading-none">
+          <span class="font-extrabold text-lg tracking-wider text-white">SCAM</span>
+          <span class="font-extrabold text-lg tracking-wider text-emerald-400 -mt-0.5">KILLER</span>
+        </div>
+      </a>
+
+      <!-- Navigation Menu: 7 Organized Pages -->
+      <nav class="space-y-1.5" id="sidebarNav">
+        <!-- 1. Overview (Central Workspace) -->
+        <a href="#" data-nav-target="overview" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg nav-item-active font-medium text-sm transition-all duration-150">
+          <span class="material-symbols-outlined text-xl nav-icon">home</span>
+          <span>Overview</span>
+        </a>
+
+        <!-- 2. Scan History -->
+        <a href="#" data-nav-target="scan-history" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
+          <span class="material-symbols-outlined text-xl">history</span>
+          <span>Scan History</span>
+        </a>
+
+        <!-- 3. Scam Trends -->
+        <a href="#" data-nav-target="scam-trends" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
+          <span class="material-symbols-outlined text-xl">trending_up</span>
+          <span>Scam Trends</span>
+        </a>
+
+        <!-- 4. Community Intelligence -->
+        <a href="#" data-nav-target="community-intel" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
+          <span class="material-symbols-outlined text-xl">groups</span>
+          <span>Community Intel</span>
+        </a>
+
+        <!-- 5. Verification Assistant -->
+        <a href="#" data-nav-target="verification-assistant" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
+          <span class="material-symbols-outlined text-xl">verified_user</span>
+          <span>Trust Directory</span>
+        </a>
+
+        <!-- 6. AI Chat (Phase 2 Ready) -->
+        <a href="#" data-nav-target="ai-chat" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
+          <span class="material-symbols-outlined text-xl">smart_toy</span>
+          <span>AI Advisory Chat</span>
+        </a>
+
+        <!-- 7. Settings -->
+        <a href="#" data-nav-target="settings" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
+          <span class="material-symbols-outlined text-xl">settings</span>
+          <span>Settings</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- Bottom Left Sidebar: Watermark Shield & "Be Aware. Stay Safe." -->
+    <div class="relative p-5 overflow-hidden">
+      <div class="sidebar-aurora"></div>
+      <div class="relative z-10 flex items-center gap-3.5">
+        <div class="w-10 h-10 flex items-center justify-center">
+          <svg class="w-10 h-10 text-emerald-700/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4" stroke-width="2" />
+          </svg>
+        </div>
+        <div class="leading-tight">
+          <span class="block text-xs font-semibold text-emerald-300">Be Aware.</span>
+          <span class="block text-xs font-semibold text-emerald-300">Stay Safe.</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Mobile Sidebar Backdrop -->
+  <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden lg:hidden"></div>
+
+  <!-- MAIN WRAPPER -->
+  <div class="lg:ml-64 ml-0 flex-1 flex flex-col min-h-screen">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="h-16 px-4 lg:px-8 border-b border-slate-200 bg-white/95 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between shadow-sm">
+      <!-- Left side: Mobile Toggle + SCAM KILLER Logo -->
+      <div class="flex items-center gap-3">
+        <button id="mobileSidebarToggle" class="lg:hidden p-1.5 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors" title="Toggle Menu">
+          <span class="material-symbols-outlined text-2xl">menu</span>
+        </button>
+
+        <a href="#" data-nav-target="overview" class="flex items-center gap-2.5 group">
+          <div class="w-8 h-8 rounded-lg bg-[#092318] border border-[#154631] flex items-center justify-center shrink-0 shadow-sm">
+            <svg class="w-5 h-5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="m9 12 2 2 4-4" stroke-width="2.5" />
+            </svg>
+          </div>
+          <div class="flex items-center gap-1 leading-none">
+            <span class="font-extrabold text-base tracking-wider text-slate-900">SCAM</span>
+            <span class="font-extrabold text-base tracking-wider text-emerald-600">KILLER</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Center: Current Page Title -->
+      <div class="hidden sm:block font-bold text-sm text-slate-800" id="topNavTitle">
+        Security Overview
+      </div>
+
+      <!-- Right Side: Engine & Privacy Status Badge -->
+      <div class="flex items-center gap-3">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="hidden sm:inline">Threat Engine: Active</span>
+          <span class="sm:hidden">Active</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT VIEWS CONTAINER -->
+    <main class="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-5xl w-full mx-auto space-y-6">
+
+      <!-- ============================================================== -->
+      <!-- VIEW 1: OVERVIEW — UNIFIED INPUT WORKSPACE                     -->
+      <!-- ============================================================== -->
+      <div id="view-overview" class="view-section active space-y-7 py-2">
+
+        <!-- 1. MAIN HERO SECTION -->
+        <section class="flex flex-col items-center justify-center text-center space-y-3 pt-3 sm:pt-4">
+          <!-- Subtle Professional Circular Safety Indicator -->
+          <div class="safety-indicator-glow w-16 h-16 flex items-center justify-center">
+            <div class="safety-indicator-aura"></div>
+            <div class="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center shadow-sm">
+              <svg class="w-6 h-6 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="m9 12 2 2 4-4" stroke-width="2.5" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Central Headline & Supporting Line -->
+          <div class="space-y-1.5">
+            <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#092318] tracking-tight">
+              Is This a Scam?
+            </h1>
+            <p class="text-sm sm:text-base text-slate-600 font-normal max-w-lg mx-auto">
+              Check suspicious messages, links, screenshots, and audio before you trust them.
+            </p>
+          </div>
+        </section>
+
+        <!-- 2. MAIN SCANNER WORKSPACE -->
+        <section class="cyber-card rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-md relative bg-white space-y-4">
+          <div id="scannerDropZone" class="relative rounded-xl border border-slate-200 bg-[#f8faf8] focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all">
+
+            <!-- Main Input Textarea -->
+            <textarea
+              id="unifiedScanInput"
+              rows="5"
+              placeholder="Paste any suspicious message, email, or link here..."
+              class="w-full bg-transparent p-4 sm:p-5 text-sm sm:text-base text-slate-900 placeholder:text-slate-400 focus:outline-none resize-none leading-relaxed"
+            ></textarea>
+
+            <!-- A. Screenshot Upload Preview (Populates Main Input via OCR) -->
+            <div id="attachedScreenshotPreview" class="hidden mx-4 mb-3 p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-lg bg-white flex items-center justify-center text-emerald-600 shrink-0 overflow-hidden border border-emerald-200 shadow-sm">
+                  <img id="screenshotThumbnail" src="" class="w-full h-full object-cover hidden" alt="Screenshot preview" />
+                  <span id="screenshotThumbnailFallback" class="material-symbols-outlined text-2xl">image</span>
+                </div>
+                <div class="min-w-0">
+                  <span id="screenshotFileName" class="text-xs sm:text-sm font-semibold text-slate-900 block truncate max-w-xs sm:max-w-md">screenshot.png</span>
+                  <div class="flex items-center gap-2 mt-0.5">
+                    <span id="ocrStatusBadge" class="text-[11px] text-emerald-700 font-mono flex items-center gap-1">
+                      <span class="material-symbols-outlined text-xs">check_circle</span>
+                      <span id="ocrStatusText">Text extracted via Apple Vision • Editable in input box</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- OCR Progress Indicator -->
+              <div id="ocrProgressContainer" class="hidden flex-1 sm:max-w-xs px-2">
+                <div class="flex items-center justify-between text-[11px] text-emerald-800 font-mono mb-1">
+                  <span>Extracting visual text...</span>
+                  <span id="ocrProgressPercent">Processing</span>
+                </div>
+                <div class="w-full bg-emerald-200 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-emerald-600 h-1.5 rounded-full animate-pulse w-3/4"></div>
+                </div>
+              </div>
+
+              <button id="removeScreenshotBtn" type="button" class="text-slate-400 hover:text-rose-600 p-2 rounded-lg hover:bg-white transition-colors shrink-0 self-end sm:self-center" title="Remove screenshot">
+                <span class="material-symbols-outlined text-lg">close</span>
+              </button>
+            </div>
+
+            <!-- B. Voice Recording Upload Preview (Populates Main Input via STT) -->
+            <div id="attachedAudioPreview" class="hidden mx-4 mb-3 p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-lg bg-white flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-200 shadow-sm">
+                  <span class="material-symbols-outlined text-2xl">mic</span>
+                </div>
+                <div class="min-w-0">
+                  <span id="audioFileName" class="text-xs sm:text-sm font-semibold text-slate-900 block truncate max-w-xs sm:max-w-md">recording.mp3</span>
+                  <span class="text-[11px] text-emerald-700 font-mono block">Zero-storage speech transcription</span>
+                </div>
+              </div>
+
+              <!-- Embedded HTML5 Audio Player -->
+              <div class="flex items-center gap-2 w-full sm:w-auto">
+                <audio id="audioPreviewPlayer" controls class="w-full sm:w-60 h-8 rounded-lg shadow-sm"></audio>
+                
+                <!-- Language Selector -->
+                <select id="audioLanguageSelect" class="text-xs rounded-lg border-slate-300 bg-white text-slate-800 py-1.5 px-2.5 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm shrink-0" title="Transcription Language">
+                  <option value="ta-IN" selected>Tamil (India) — Default</option>
+                  <option value="en-IN">English (India)</option>
+                  <option value="en-US">English (United States)</option>
+                  <option value="hi-IN">Hindi (India)</option>
+                </select>
+              </div>
+
+              <!-- Transcription Progress Bar -->
+              <div id="transcribeProgressContainer" class="hidden flex-1 sm:max-w-xs px-2">
+                <div class="flex items-center justify-between text-[11px] text-emerald-800 font-mono mb-1">
+                  <span id="audioProgressStep">Uploading audio...</span>
+                  <span id="audioProgressPercent">Processing</span>
+                </div>
+                <div class="w-full bg-emerald-200 rounded-full h-1.5 overflow-hidden">
+                  <div id="audioProgressBar" class="bg-emerald-600 h-1.5 rounded-full transition-all duration-300 w-1/4"></div>
+                </div>
+              </div>
+
+              <!-- Audio Status Badge -->
+              <div id="audioStatusBadge" class="hidden text-[11px] font-mono text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-md border border-emerald-200">
+                <span id="audioStatusText">Transcribed</span>
+              </div>
+
+              <button id="removeAudioBtn" type="button" class="text-slate-400 hover:text-rose-600 p-2 rounded-lg hover:bg-white transition-colors shrink-0 self-end sm:self-center" title="Discard audio recording">
+                <span class="material-symbols-outlined text-lg">delete</span>
+              </button>
+            </div>
+
+            <!-- Action Controls Row -->
+            <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-white border-t border-slate-200 rounded-b-xl">
+              <!-- Left Action Buttons -->
+              <div class="flex flex-wrap items-center gap-2">
+                <!-- Hidden Inputs -->
+                <input type="file" id="unifiedFileInput" accept="image/png,image/jpeg,image/webp" class="hidden" />
+                <input type="file" id="unifiedAudioInput" accept="audio/*,.opus,.ogg,.mp3,.m4a,.aac,.wav,.flac,.webm,.weba,.mp4,.aiff,.aif,.amr,.3gp,.3gpp,.caf" class="hidden" />
+
+                <!-- Upload Screenshot Button -->
+                <button
+                  id="unifiedScreenshotBtn"
+                  type="button"
+                  class="px-3.5 py-2 rounded-lg bg-white border border-slate-200 hover:border-emerald-600 hover:bg-emerald-50/40 text-slate-700 hover:text-slate-900 text-xs font-medium transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+                >
+                  <span class="material-symbols-outlined text-base text-emerald-600">upload_file</span>
+                  <span>Upload Screenshot</span>
+                </button>
+
+                <!-- Upload Voice Recording Button -->
+                <button
+                  id="unifiedAudioBtn"
+                  type="button"
+                  class="px-3.5 py-2 rounded-lg bg-white border border-slate-200 hover:border-emerald-600 hover:bg-emerald-50/40 text-slate-700 hover:text-slate-900 text-xs font-medium transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+                >
+                  <span class="material-symbols-outlined text-base text-emerald-600">mic</span>
+                  <span>Upload Voice Recording</span>
+                </button>
+
+                <!-- Clear Button -->
+                <button
+                  id="unifiedClearBtn"
+                  type="button"
+                  class="px-3 py-2 rounded-lg bg-white border border-slate-200 hover:border-slate-400 hover:text-slate-900 text-slate-500 text-xs font-medium transition-all flex items-center gap-1.5 shadow-sm"
+                >
+                  <span class="material-symbols-outlined text-base">clear_all</span>
+                  <span>Clear</span>
+                </button>
+              </div>
+
+              <!-- Right Action: Primary Analyze Button -->
+              <div class="flex items-center gap-3">
+                <button
+                  id="unifiedAnalyzeBtn"
+                  type="button"
+                  class="px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm tracking-wide transition-all shadow-[0_2px_10px_rgba(5,150,105,0.3)] active:scale-[0.98] flex items-center gap-2"
+                >
+                  <span class="material-symbols-outlined text-base font-bold">search_check</span>
+                  <span>Analyse</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Privacy Notice -->
+          <div class="flex items-center justify-between text-[11px] text-slate-500 px-1">
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs text-emerald-600">lock</span>
+              <span>Zero-Log Architecture • Credentials and OTPs sanitized immediately</span>
+            </span>
+            <span class="font-mono text-[10px]">Phase 1 Intelligence Platform</span>
+          </div>
+        </section>
+
+        <!-- 3. MODERN INTELLIGENCE SCANNING VISUAL (Shown during analysis) -->
+        <section id="scannerAnimationCard" class="hidden cyber-card rounded-2xl p-8 border border-slate-200 shadow-md bg-white text-center flex flex-col items-center justify-center space-y-4">
+          <div class="intelligence-scanner-ring">
+            <div class="intelligence-scanner-radar"></div>
+            <div class="intelligence-scanner-center">
+              <span class="material-symbols-outlined text-emerald-400 text-xl">shield</span>
+            </div>
+          </div>
+          <div class="space-y-1">
+            <h3 class="text-base font-bold text-slate-900 tracking-tight">Scanning Threat Intelligence Vectors...</h3>
+            <p id="scannerStatusTicker" class="text-xs font-mono text-emerald-700">Initializing heuristic models &amp; authority databases...</p>
+          </div>
+        </section>
+
+        <!-- 4. COMPACT AI RESULT COMPONENT -->
+        <section id="inlineResultCard" class="hidden cyber-card rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-md space-y-4 bg-white transition-all">
+          <!-- Top Row: Classification Badge + Confidence + DeepSeek AI Label -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2.5">
+              <div id="inlineResultBadge"></div>
+              <span id="inlineConfidenceBadge" class="text-[11px] font-mono text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200"></span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="flex items-center gap-1 text-[11px] font-mono text-emerald-800 bg-emerald-50/80 px-2.5 py-1 rounded-full border border-emerald-200/80">
+                <span class="material-symbols-outlined text-xs text-emerald-600">psychology</span>
+                <span>Google Gemini AI Intelligence</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Community Match Alert (if present) -->
+          <div id="inlineCommunityMatch" class="hidden p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-amber-600 text-lg shrink-0">groups</span>
+            <div class="min-w-0 flex-1">
+              <span class="font-bold block" id="inlineCommunityMatchTitle">Matches Known Community Scam Pattern</span>
+              <span class="text-[11px] text-amber-700" id="inlineCommunityMatchDesc"></span>
+            </div>
+            <span id="inlineCommunityMatchUpvotes" class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-mono shrink-0"></span>
+          </div>
+
+          <!-- Short AI-Generated Explanation -->
+          <div class="space-y-1">
+            <p id="inlineResultExplanation" class="text-xs sm:text-sm font-medium text-slate-800 leading-relaxed"></p>
+          </div>
+
+          <!-- Main Detected Threat Indicators (Compact Badges) -->
+          <div id="inlineIndicatorsContainer" class="space-y-1.5">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">Key Detected Threat Indicators</span>
+            <ul id="inlineIndicatorsList" class="flex flex-wrap gap-2 text-xs"></ul>
+          </div>
+
+          <!-- Why This Matters Note -->
+          <div id="inlineWhyItMattersContainer" class="p-3 rounded-xl bg-amber-50/70 border border-amber-200/70 text-xs text-amber-950 flex items-start gap-2.5">
+            <span class="material-symbols-outlined text-base text-amber-600 shrink-0 mt-0.5">info</span>
+            <p id="inlineWhyItMattersText" class="leading-relaxed text-xs"></p>
+          </div>
+
+          <!-- Footer Actions: View Full Details, Download PDF Report, Close Report View -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
+            <div class="flex flex-wrap items-center gap-2">
+              <button id="inspectFullReportBtn" type="button" class="px-3.5 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold transition-all flex items-center gap-1.5 shadow-sm active:scale-95">
+                <span class="material-symbols-outlined text-sm">visibility</span>
+                <span>Open Full Report</span>
+              </button>
+              <button id="downloadPdfReportBtnCompact" type="button" class="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 active:scale-95">
+                <span class="material-symbols-outlined text-sm">download</span>
+                <span>Download PDF</span>
+              </button>
+              <button id="closeInlineResultBtn" type="button" class="px-3.5 py-2 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-600 hover:text-slate-900 text-xs font-medium transition-all flex items-center gap-1.5 shadow-sm active:scale-95" title="Close this report view without deleting the report">
+                <span class="material-symbols-outlined text-sm text-slate-500">close</span>
+                <span>Close Report View</span>
+              </button>
+            </div>
+            <span class="text-[11px] text-slate-400 font-mono">Saved to SQLite Scan History</span>
+          </div>
+        </section>
+
+        <!-- 5. QUICK AI ADVISORY CHAT ACCESS BANNER -->
+        <section class="pt-1">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-gradient-to-r from-[#092318] via-[#0d3021] to-[#092318] border border-emerald-700/40 text-white shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                <span class="material-symbols-outlined text-xl">smart_toy</span>
+              </div>
+              <div>
+                <span class="text-xs font-bold text-white block">Unsure about a situation, call, or suspicious request?</span>
+                <span class="text-[11px] text-emerald-300/80 block">Ask our AI Advisory Chat for educational scam intelligence and safe guidance.</span>
+              </div>
+            </div>
+            <button type="button" data-nav-target="ai-chat" class="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold tracking-wide transition-all shrink-0 flex items-center gap-1.5 shadow-sm active:scale-95">
+              <span>Open AI Chat</span>
+              <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- 6. COMPACT SAFETY TIPS -->
+        <section class="pt-1">
+          <div class="p-4 rounded-xl bg-emerald-50/80 border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-700 shadow-sm">
+            <div class="flex items-start sm:items-center gap-3">
+              <span class="material-symbols-outlined text-emerald-700 text-lg shrink-0 mt-0.5 sm:mt-0">shield</span>
+              <div>
+                <span class="font-bold text-slate-900">Safety Golden Rule:</span>
+                <span class="ml-1 text-slate-700">Never share passwords, OTPs, PINs, or install remote assistance apps (.apk / AnyDesk). Legitimate institutions never demand them.</span>
+              </div>
+            </div>
+            <span class="text-[11px] font-mono text-emerald-700 bg-white px-2.5 py-1 rounded border border-emerald-300 shrink-0 self-start sm:self-auto shadow-sm">
+              Privacy First • Zero Logging
+            </span>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- VIEW 2: SCAN HISTORY & AUDIT LOG                               -->
+      <!-- ============================================================== -->
+      <div id="view-scan-history" class="view-section space-y-5" style="display: none;">
+        <div class="cyber-card rounded-2xl p-6 border border-slate-200 bg-white shadow-sm space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600">history</span>
+                Scan History &amp; Audit Log
+              </h2>
+              <p class="text-xs text-slate-500">Review your past queries and threat breakdowns.</p>
+            </div>
+            <button id="clearHistoryBtn" class="px-3.5 py-1.5 rounded-lg border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-medium transition-colors flex items-center gap-1.5 self-start sm:self-auto shadow-sm">
+              <span class="material-symbols-outlined text-sm">delete</span>
+              <span>Clear History</span>
+            </button>
+          </div>
+
+          <!-- Search and Filter Controls -->
+          <!-- Search and Filter Controls -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="relative flex-1 max-w-sm">
+              <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
+              <input type="text" id="historySearchInput" placeholder="Search by message, entity, category..." class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:border-emerald-600 bg-slate-50" />
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <label class="text-xs text-slate-500">Risk:</label>
+              <select id="historyFilterSelect" class="text-xs rounded-lg border-slate-200 bg-slate-50 text-slate-800 py-1.5 px-2.5 focus:outline-none focus:border-emerald-600">
+                <option value="all">All Classifications</option>
+                <option value="suspicious">Suspicious</option>
+                <option value="caution">Caution</option>
+                <option value="safe">No Clear Warning Signs</option>
+              </select>
+              <label class="text-xs text-slate-500 ml-1">Category:</label>
+              <select id="historyCategoryFilterSelect" class="text-xs rounded-lg border-slate-200 bg-slate-50 text-slate-800 py-1.5 px-2.5 focus:outline-none focus:border-emerald-600">
+                <option value="all">All Categories</option>
+                <option value="Banking / KYC">Banking / KYC</option>
+                <option value="Delivery Phishing">Delivery Phishing</option>
+                <option value="Lottery / Rewards">Lottery / Rewards</option>
+                <option value="Work-from-Home">Work-from-Home</option>
+                <option value="Utility Bill">Utility Bill</option>
+                <option value="Government / Legal">Government / Legal</option>
+                <option value="General Phishing">General Phishing</option>
+                <option value="Benign Transactional">Benign Transactional</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- History Table -->
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-mono uppercase text-slate-500">
+                  <th class="p-3">Date &amp; Time</th>
+                  <th class="p-3">Type</th>
+                  <th class="p-3">Target Content</th>
+                  <th class="p-3">Category &amp; Risk</th>
+                  <th class="p-3 text-right">Report Actions</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Clean Empty State Container -->
+          <div id="historyEmptyState" class="hidden p-8 text-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50 space-y-2">
+            <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+              <span class="material-symbols-outlined text-xl">history</span>
+            </div>
+            <h4 class="text-xs font-bold text-slate-800">No Scan Reports Found</h4>
+            <p class="text-[11px] text-slate-500 max-w-sm mx-auto">
+              Scans analyzed on the Overview page are stored here automatically. No reports currently match your search or filter.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- VIEW 3: SCAM TRENDS & EARLY WARNING RADAR                      -->
+      <!-- ============================================================== -->
+      <div id="view-scam-trends" class="view-section space-y-5" style="display: none;">
+        <div class="cyber-card rounded-2xl p-6 border border-slate-200 bg-white shadow-sm space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-rose-600">trending_up</span>
+                Scam Pattern Early Warning Radar &amp; Trends
+              </h2>
+              <p class="text-xs text-slate-500">Verified regional fraud campaigns and velocity telemetry.</p>
+            </div>
+            <span class="text-[10px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full self-start sm:self-auto">
+              Authentic SQLite Telemetry
+            </span>
+          </div>
+
+          <!-- Radar Notice -->
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-slate-500 text-base shrink-0">info</span>
+            <span>Telemetry Notice: Statistical surge modeling requires minimum 50 confirmed incidents. Displaying verified incident counts without fabricated percentages.</span>
+          </div>
+
+          <!-- Radar Cards Grid -->
+          <div id="radarCardsGridTrends" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+            <!-- Dynamically populated from /api/radar/trends -->
+          </div>
+
+          <!-- Popular Scam Categories Breakdown -->
+          <div class="space-y-3 pt-3">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-700 font-mono">Popular Threat Categories in SQLite Database</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="popularCategoriesGrid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Structured Community Pattern Clusters -->
+          <div class="space-y-3 pt-4 border-t border-slate-200">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-700 font-mono">Clustered Threat Patterns &amp; Velocity (Fingerprint Aggregated)</h3>
+              <span class="text-[10px] font-mono text-slate-400">Zero-Log Sanitized Clustering</span>
+            </div>
+            <div id="communityPatternsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <!-- Dynamically populated from /api/community/patterns -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- VIEW 4: COMMUNITY INTELLIGENCE                                 -->
+      <!-- ============================================================== -->
+      <div id="view-community-intel" class="view-section space-y-5" style="display: none;">
+        <div class="cyber-card rounded-2xl p-6 border border-slate-200 bg-white shadow-sm space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600">groups</span>
+                Community Threat Intelligence Database
+              </h2>
+              <p class="text-xs text-slate-500">Crowdsourced threat signatures with explicit demonstration sample separation.</p>
+            </div>
+            <button id="openReportModalBtn" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs tracking-wide transition-all shadow-sm flex items-center gap-1.5 self-start sm:self-auto">
+              <span class="material-symbols-outlined text-sm">flag</span>
+              <span>Report Suspicious Item</span>
+            </button>
+          </div>
+
+          <!-- Category Filter Pills -->
+          <div class="flex flex-wrap items-center gap-2" id="communityCategoryFilters">
+            <button class="community-filter-btn px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-300 active" data-category="all">All Categories</button>
+            <button class="community-filter-btn px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200" data-category="Banking / KYC">Banking / KYC</button>
+            <button class="community-filter-btn px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200" data-category="Delivery Phishing">Delivery Phishing</button>
+            <button class="community-filter-btn px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200" data-category="Utility Bill">Utility Bill</button>
+            <button class="community-filter-btn px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200" data-category="Work-from-Home">Work-from-Home</button>
+          </div>
+
+          <!-- Community Feeds Grid -->
+          <div id="communityFeedContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+            <!-- Dynamically populated from /api/community -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- VIEW 5: VERIFICATION ASSISTANT (Dedicated Directory)           -->
+      <!-- ============================================================== -->
+      <div id="view-verification-assistant" class="view-section space-y-5" style="display: none;">
+        <div class="cyber-card rounded-2xl p-6 border border-slate-200 bg-white shadow-sm space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600">verified_user</span>
+                Trust Verification Directory
+              </h2>
+              <p class="text-xs text-slate-500">Official registry of validated domains, SMS headers, and consumer helplines.</p>
+            </div>
+            <div class="relative w-full sm:w-64">
+              <span class="material-symbols-outlined absolute left-3 top-2 text-slate-400 text-sm">search</span>
+              <input type="text" id="verificationSearchInput" placeholder="Search institutions..." class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:border-emerald-600 bg-slate-50" />
+            </div>
+          </div>
+
+          <!-- Full Directory Grid -->
+          <div id="verificationDirectoryGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Dynamically populated from data.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- VIEW 6: AI ADVISORY CHAT (Phase 2 Ready)                       -->
+      <!-- ============================================================== -->
+      <div id="view-ai-chat" class="view-section space-y-5" style="display: none;">
+        <div class="cyber-card rounded-2xl p-6 border border-slate-200 bg-white shadow-sm space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600">smart_toy</span>
+                AI Scam Advisory Chat
+              </h2>
+              <p class="text-xs text-slate-500">Ask freeform cybersecurity questions without uploading files.</p>
+            </div>
+            <span class="text-[10px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full self-start sm:self-auto">
+              Google Gemini AI Engine
+            </span>
+          </div>
+
+          <!-- Notice Banner -->
+          <div class="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200 text-xs text-emerald-950 flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-emerald-700 text-base shrink-0">info</span>
+            <span><b>Active Gemini Advisory:</b> Ask questions about suspicious messages, verify suspicious situations, or get immediate safety steps. Powered by Google Gemini AI.</span>
+          </div>
+
+          <!-- Quick Prompt Chips -->
+          <div class="flex flex-wrap items-center gap-2" id="chatPromptChips">
+            <button class="chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium border border-slate-200 transition-colors">
+              How do I spot a fake bank KYC message?
+            </button>
+            <button class="chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium border border-slate-200 transition-colors">
+              What should I do if I shared my OTP?
+            </button>
+            <button class="chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium border border-slate-200 transition-colors">
+              How can I tell if a parcel delivery SMS is genuine?
+            </button>
+            <button class="chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium border border-slate-200 transition-colors">
+              Why are APK downloads from WhatsApp dangerous?
+            </button>
+          </div>
+
+          <!-- Chat Stream Box -->
+          <div id="chatMessagesContainer" class="p-4 rounded-xl bg-slate-50 border border-slate-200 h-80 overflow-y-auto space-y-3">
+            <div class="flex items-start gap-2.5">
+              <div class="w-7 h-7 rounded-full bg-[#092318] text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">AI</div>
+              <div class="chat-bubble-assistant p-3 rounded-xl max-w-lg text-xs leading-relaxed shadow-sm">
+                Hello! I am the <b>SCAM KILLER Security Assistant</b>. You can ask me how to identify specific phishing tactics, verify unsolicited calls, or safeguard your credentials. How can I assist you today?
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat Input -->
+          <form id="chatForm" class="flex items-center gap-2">
+            <input type="text" id="chatInputText" placeholder="Ask any question about scam messages, suspicious links, or digital safety..." class="flex-1 px-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-600 bg-white shadow-sm" />
+            <button type="submit" id="chatSendBtn" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs tracking-wide transition-all shadow-sm flex items-center gap-1.5">
+              <span>Send</span>
+              <span class="material-symbols-outlined text-sm">send</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- VIEW 7: SETTINGS                                               -->
+      <!-- ============================================================== -->
+      <div id="view-settings" class="view-section space-y-5" style="display: none;">
+        <div class="cyber-card rounded-2xl p-6 border border-slate-200 bg-white shadow-sm space-y-5">
+          <div class="pb-4 border-b border-slate-200">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-600">settings</span>
+              System &amp; Privacy Settings
+            </h2>
+            <p class="text-xs text-slate-500">Configure security defaults, privacy preferences, and session controls.</p>
+          </div>
+
+          <div class="space-y-4 text-xs">
+            <!-- Setting 1: Client Privacy Interceptor -->
+            <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <div>
+                <span class="font-bold text-slate-900 block">Strict Credential Interceptor</span>
+                <span class="text-slate-500">Immediately halts analysis and sanitizes input if passwords or OTP codes are entered.</span>
+              </div>
+              <span class="px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 font-mono font-semibold">ALWAYS ACTIVE</span>
+            </div>
+
+            <!-- Setting 2: Default Speech Transcription Language -->
+            <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <div>
+                <span class="font-bold text-slate-900 block">Default Audio Transcription Language</span>
+                <span class="text-slate-500">Select language for speech-to-text recognition.</span>
+              </div>
+              <select id="settingsDefaultLang" class="rounded-lg border-slate-200 bg-white py-1.5 px-3 text-slate-800 font-medium">
+                <option value="en-IN" selected>English (India)</option>
+                <option value="en-US">English (US)</option>
+                <option value="ta-IN">Tamil (India)</option>
+              </select>
+            </div>
+
+            <!-- Setting 3: Zero Persistent Storage Policy -->
+            <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <div>
+                <span class="font-bold text-slate-900 block">Zero Persistent Audio &amp; Image Storage</span>
+                <span class="text-slate-500">Uploaded screenshots and audio files are processed in ephemeral memory and immediately unlinked.</span>
+              </div>
+              <span class="px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 font-mono font-semibold">ENFORCED</span>
+            </div>
+
+            <!-- Setting 4: Data Management -->
+            <div class="flex items-center justify-between p-3.5 rounded-xl bg-rose-50/50 border border-rose-200">
+              <div>
+                <span class="font-bold text-rose-900 block">Purge Local Session Telemetry</span>
+                <span class="text-rose-700">Deletes all audit records stored in SQLite during this session.</span>
+              </div>
+              <button onclick="window.purgeSessionHistory()" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm">
+                Purge All Data
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="mt-auto border-t border-slate-200 bg-white py-4 px-4 sm:px-8 text-center text-xs text-slate-500">
+      <div class="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <span>SCAM KILLER v1.0.0 • AI-Powered Scam Intelligence Platform (Phase 1)</span>
+        <span class="font-mono text-[11px] text-emerald-700">Strict Privacy Safeguards • Zero-Log Storage</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- MODAL 1: FULL REPORT MODAL (<dialog>)                            -->
+  <!-- ================================================================ -->
+  <dialog id="fullReportModal" class="rounded-2xl p-0 border border-slate-200 shadow-2xl bg-white max-w-2xl w-full mx-auto my-auto backdrop:bg-slate-900/60 backdrop:backdrop-blur-sm overflow-hidden">
+    <div class="flex flex-col max-h-[90vh]">
+      <!-- Modal Header -->
+      <div class="p-5 bg-[#092318] text-white flex items-center justify-between border-b border-[#154631] shrink-0">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400">
+            <span class="material-symbols-outlined text-lg">description</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-sm tracking-wide">Threat Intelligence Assessment Report</h3>
+            <p class="text-[11px] text-emerald-300/80 font-mono">SCAM KILLER Evaluation Certificate</p>
+          </div>
+        </div>
+        <button id="closeFullReportModalBtn" type="button" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors" title="Close report">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 overflow-y-auto space-y-5 text-xs text-slate-800">
+        <!-- Assessment Metadata Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-[11px]">
+          <div>
+            <span class="text-slate-400 block text-[9px] uppercase">Assessment ID</span>
+            <span id="modalReportScanId" class="font-bold text-slate-900 block truncate">SK-00000000</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[9px] uppercase">Date &amp; Time</span>
+            <span id="modalReportTimestamp" class="text-slate-700 block truncate">Just now</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[9px] uppercase">Evaluation</span>
+            <span id="modalReportEngineStatus" class="text-emerald-700 block truncate font-bold">Google Gemini AI</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[9px] uppercase">Zero-Log Policy</span>
+            <span class="text-slate-700 block truncate">Enforced</span>
+          </div>
+        </div>
+
+        <!-- Classification Banner -->
+        <div id="modalReportClassificationBanner" class="p-3.5 rounded-xl font-bold text-center tracking-wide text-xs">
+          <!-- Populated dynamically -->
+        </div>
+
+        <!-- Analyzed Content Excerpt -->
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+          <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">Submitted Target Excerpt</span>
+          <p id="modalReportTargetSnippet" class="font-mono text-slate-800 break-all leading-relaxed"></p>
+        </div>
+
+        <!-- Executive Summary -->
+        <div class="space-y-1.5">
+          <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[11px] font-mono">Executive Summary</h4>
+          <p id="modalReportExplanation" class="text-slate-700 leading-relaxed bg-slate-50/70 p-3 rounded-lg border border-slate-200"></p>
+        </div>
+
+        <!-- Detailed Contextual Reasoning -->
+        <div class="space-y-1.5">
+          <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[11px] font-mono">Detailed Contextual Reasoning</h4>
+          <p id="modalReportReasoning" class="text-slate-700 leading-relaxed bg-slate-50/70 p-3 rounded-lg border border-slate-200"></p>
+        </div>
+
+        <!-- Detected Warning Indicators -->
+        <div class="space-y-2">
+          <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[11px] font-mono">Detected Threat Indicators</h4>
+          <ul id="modalReportIndicatorsList" class="space-y-1 p-3 rounded-lg bg-rose-50/60 border border-rose-100 text-rose-900">
+            <!-- Populated dynamically -->
+          </ul>
+        </div>
+
+        <!-- Why It Matters -->
+        <div class="space-y-1.5">
+          <h4 class="font-bold text-amber-900 uppercase tracking-wider text-[11px] font-mono flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm text-amber-600">help</span>
+            <span>Why This Assessment Matters</span>
+          </h4>
+          <p id="modalReportWhyMatters" class="text-slate-700 leading-relaxed bg-amber-50/50 p-3 rounded-lg border border-amber-200/60"></p>
+        </div>
+
+        <!-- Independent Verification Guidance -->
+        <div class="space-y-1.5" id="modalReportVerificationSection">
+          <h4 class="font-bold text-sky-900 uppercase tracking-wider text-[11px] font-mono flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm text-sky-600">verified</span>
+            <span>Independent Verification Guidance</span>
+          </h4>
+          <p id="modalReportVerificationAdvice" class="text-slate-700 leading-relaxed bg-sky-50/60 p-3 rounded-lg border border-sky-100"></p>
+        </div>
+
+        <!-- Recommended Safe Next Steps -->
+        <div class="space-y-2">
+          <h4 class="font-bold text-emerald-900 uppercase tracking-wider text-[11px] font-mono flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm text-emerald-600">checklist</span>
+            <span>Recommended Safe Next Steps</span>
+          </h4>
+          <ul id="modalReportNextSteps" class="space-y-1 p-3 rounded-lg bg-emerald-50/60 border border-emerald-100 text-emerald-900">
+            <!-- Populated dynamically -->
+          </ul>
+        </div>
+
+        <!-- Assessment Limitations -->
+        <div class="space-y-1.5">
+          <h4 class="font-bold text-slate-500 uppercase tracking-wider text-[11px] font-mono">Assessment Scope &amp; Important Uncertainties</h4>
+          <ul id="modalReportLimitations" class="space-y-1 p-3 rounded-lg bg-slate-50 border border-slate-200 text-slate-600 text-[11px]">
+            <!-- Populated dynamically -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
+        <button id="modalCloseBtn2" type="button" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 font-medium text-xs transition-colors">
+          Close
+        </button>
+        <button id="downloadPdfReportBtn" type="button" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs tracking-wide transition-all shadow-sm flex items-center gap-1.5 active:scale-95">
+          <span class="material-symbols-outlined text-sm">download</span>
+          <span>Download PDF Report</span>
+        </button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ================================================================ -->
+  <!-- MODAL 2: COMMUNITY REPORT SUBMISSION MODAL                       -->
+  <!-- ================================================================ -->
+  <dialog id="communityReportModal" class="rounded-2xl p-0 border border-slate-200 shadow-2xl bg-white max-w-lg w-full mx-auto my-auto backdrop:bg-slate-900/60 backdrop:backdrop-blur-sm overflow-hidden">
+    <div class="p-5 bg-[#092318] text-white flex items-center justify-between border-b border-[#154631]">
+      <h3 class="font-bold text-sm">Report Suspicious Item</h3>
+      <button id="closeCommunityReportModalBtn" type="button" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+    <form id="communityReportForm" class="p-6 space-y-4 text-xs">
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Category</label>
+        <select id="reportCategory" class="w-full rounded-lg border-slate-200 bg-slate-50 p-2 text-xs">
+          <option value="Banking / KYC">Banking / KYC</option>
+          <option value="Delivery Phishing">Delivery Phishing</option>
+          <option value="Utility Bill">Utility Bill</option>
+          <option value="Work-from-Home">Work-from-Home</option>
+          <option value="General Phishing">General Phishing</option>
+        </select>
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Incident Title</label>
+        <input type="text" id="reportTitle" required placeholder="e.g. Urgent KYC Verification SMS" class="w-full rounded-lg border-slate-200 bg-slate-50 p-2 text-xs" />
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Reported Message / Link</label>
+        <textarea id="reportItem" rows="3" required placeholder="Paste the message or link (all secrets will be sanitized)" class="w-full rounded-lg border-slate-200 bg-slate-50 p-2 text-xs"></textarea>
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Description / Tactic</label>
+        <textarea id="reportDesc" rows="2" placeholder="Describe the scammer tactic or pressure applied..." class="w-full rounded-lg border-slate-200 bg-slate-50 p-2 text-xs"></textarea>
+      </div>
+      <div class="pt-3 border-t border-slate-200 flex items-center justify-end gap-2">
+        <button type="button" id="cancelCommunityReportBtn" class="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs">Cancel</button>
+        <button type="submit" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs">Submit Report</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Floating Toast Notifications -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
+
+  <!-- Application Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/scanner.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
