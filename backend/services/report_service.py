@@ -157,17 +157,17 @@ class ReportService:
         scan_date = cls._escape(report_data.get("timestamp") or report_data.get("date_reported") or datetime.now().strftime("%Y-%m-%d %H:%M UTC"))
         engine_status = cls._escape(report_data.get("engine_status") or "AI Contextual Intelligence Active")
         ai_model = cls._escape(report_data.get("ai_model") or "gemini-3.5-flash-lite")
-        category = cls._escape(report_data.get("category") or "General Threat")
+        category = cls._escape(report_data.get("scam_category") or report_data.get("category") or report_data.get("scam_type") or report_data.get("threat_category") or "General Threat")
         impersonated_entity = cls._escape(report_data.get("impersonated_entity") or report_data.get("impersonatedEntity") or "None / Unspecified")
         source_type = str(report_data.get("source_type") or report_data.get("sourceType") or report_data.get("scan_type") or "text").lower()
 
         classification_raw = str(report_data.get("risk_level") or report_data.get("riskLevel") or report_data.get("risk_category") or "caution").lower()
-        if "suspicious" in classification_raw:
+        if "suspicious" in classification_raw or "high" in classification_raw or "critical" in classification_raw:
             badge_bg = cls.ROSE_RED
             badge_text = "▲ SUSPICIOUS — HIGH THREAT CONFIDENCE"
             default_score = 92
             risk_label_clean = "Suspicious (High Risk)"
-        elif "no clear" in classification_raw or "safe" in classification_raw or "no_clear" in classification_raw:
+        elif "no clear" in classification_raw or "safe" in classification_raw or "no_clear" in classification_raw or "low" in classification_raw:
             badge_bg = cls.EMERALD_GREEN
             badge_text = "✓ NO CLEAR WARNING SIGNS"
             default_score = 12
@@ -181,6 +181,10 @@ class ReportService:
         scoring_breakdown = report_data.get("scoring_breakdown", {})
         if isinstance(scoring_breakdown, dict) and "total_score" in scoring_breakdown:
             risk_score = int(scoring_breakdown["total_score"])
+        elif "risk_score" in report_data and report_data["risk_score"] is not None:
+            risk_score = int(report_data["risk_score"])
+        elif "riskScore" in report_data and report_data["riskScore"] is not None:
+            risk_score = int(report_data["riskScore"])
         else:
             risk_score = default_score
 
@@ -302,8 +306,9 @@ class ReportService:
             esc_ocr = cls._escape(extracted_text.strip()[:1200])
             ocr_words = len(extracted_text.split())
             ocr_chars = len(extracted_text)
+            engine_str = cls._escape(str(report_data.get("ocr_engine") or "Visual OCR Engine"))
             content_items.append([
-                Paragraph(f"<b>Extracted Text via Visual OCR Engine ({ocr_words} words, {ocr_chars} characters):</b>", extracted_header_style)
+                Paragraph(f"<b>Extracted Text via {engine_str} ({ocr_words} words, {ocr_chars} characters):</b>", extracted_header_style)
             ])
             content_items.append([
                 Paragraph(f"<i>\"{esc_ocr}\"</i>", extracted_body_style)
@@ -337,7 +342,12 @@ class ReportService:
         # -----------------------------------------------------------------
         # 6. Detected Warning Indicators (Structured Table with Severity Chips)
         # -----------------------------------------------------------------
-        indicators = report_data.get("detected_indicators") or report_data.get("indicators") or []
+        indicators = (
+            report_data.get("detected_indicators") or
+            report_data.get("detailed_indicators") or
+            report_data.get("indicators") or
+            []
+        )
         if indicators:
             story.append(Paragraph("Detected Threat Indicators & Risk Factors", h2_style))
             ind_rows = [
@@ -349,17 +359,17 @@ class ReportService:
             ]
             for ind in indicators:
                 if isinstance(ind, dict):
-                    title = ind.get("title") or ind.get("name") or "Threat Marker"
+                    title = ind.get("title") or ind.get("name") or ind.get("indicator") or "Threat Marker"
                     sev = str(ind.get("severity", "medium")).lower()
-                    exp = ind.get("explanation") or ind.get("why_detected") or ""
+                    exp = ind.get("explanation") or ind.get("why_detected") or ind.get("description") or ind.get("category") or ""
                 else:
                     title = str(ind)
                     sev = "medium"
                     exp = str(ind)
 
                 # Chip styling
-                if sev == "high":
-                    chip_p = Paragraph("HIGH", chip_high_style)
+                if sev in ("critical", "high"):
+                    chip_p = Paragraph(sev.upper(), chip_high_style)
                     chip_bg = cls.ROSE_RED
                 elif sev == "low":
                     chip_p = Paragraph("LOW", chip_low_style)
