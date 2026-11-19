@@ -484,6 +484,8 @@ class ScanService:
         if extracted_text:
             result = self.process_text_scan(extracted_text, requested_type="auto", source_type="screenshot")
             result["layers"]["screenshot"] = screenshot_res
+            result["extracted_text"] = extracted_text
+            result["ocr_text"] = extracted_text
             return result
         else:
             scan_id = f"screen-{uuid.uuid4().hex[:8]}"

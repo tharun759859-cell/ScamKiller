@@ -388,16 +388,40 @@ def download_pdf_report():
 
     data = request.get_json(silent=True) or {}
     try:
-        # Re-use existing scan result from SQLite if only scan_id/scanId is provided
+        # Re-use and merge existing scan result from SQLite if scan_id/scanId is provided
         sid = data.get("scan_id") or data.get("scanId")
-        if sid and ("risk_level" not in data and "explanation" not in data and "summary" not in data):
+        if sid:
             from services.history_service import HistoryService
             existing = HistoryService.get_scan_by_id(str(sid))
-            if existing and existing.get("fullReport"):
-                data = existing["fullReport"]
+            if existing and isinstance(existing, dict):
+                merged = dict(existing)
+                if isinstance(existing.get("fullReport"), dict):
+                    merged.update(existing["fullReport"])
+                elif isinstance(existing.get("structured_data"), dict):
+                    merged.update(existing["structured_data"])
+                merged.update(data)
+                data = merged
+
+        # Normalize key aliases between frontend and backend
+        if not data.get("scan_id") and sid:
+            data["scan_id"] = sid
+        if not data.get("risk_level"):
+            data["risk_level"] = data.get("riskLevel") or data.get("risk_category") or data.get("riskCategory") or "caution"
+        if not data.get("submitted_item"):
+            data["submitted_item"] = data.get("displayItem") or data.get("display_item") or data.get("input_snippet")
+        if not data.get("recommended_actions"):
+            data["recommended_actions"] = data.get("recommended_steps") or data.get("recommendedSteps")
+        if not data.get("extracted_text"):
+            extracted = data.get("ocr_text")
+            if not extracted and isinstance(data.get("layers"), dict):
+                screen_layer = data["layers"].get("screenshot")
+                if isinstance(screen_layer, dict):
+                    extracted = screen_layer.get("extracted_text")
+            if extracted:
+                data["extracted_text"] = extracted
 
         pdf_bytes = ReportService.generate_pdf_report(data)
-        scan_id = data.get("scan_id", sid or "scam_breaker_report")
+        scan_id = data.get("scan_id") or sid or "scam_breaker_report"
         response = make_response(pdf_bytes)
         response.headers["Content-Type"] = "application/pdf"
         response.headers["Content-Disposition"] = f'attachment; filename="SCAM_BREAKER_Report_{scan_id}.pdf"'

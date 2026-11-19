@@ -273,6 +273,9 @@ class AIService:
         if not clean_content:
             raise ValueError("No content provided for AI analysis.")
 
+        # Optimize prompt token ingestion: cap long text to 4,000 chars
+        clean_content = clean_content[:4000]
+
         # Test Mode Hook for automated regression tests without active API keys
         if os.environ.get("GEMINI_TEST_MODE") == "1":
             return self._generate_simulated_ai_response(clean_content, source_type)
@@ -305,18 +308,42 @@ class AIService:
             try:
                 from google.genai import types
 
-                config = types.GenerateContentConfig(
-                    system_instruction=SCAM_ANALYSIS_SYSTEM_PROMPT,
-                    response_mime_type="application/json",
-                    response_schema=ScamAnalysisResult,
-                    temperature=0.2,
-                )
+                config_kwargs = {
+                    "system_instruction": SCAM_ANALYSIS_SYSTEM_PROMPT,
+                    "response_mime_type": "application/json",
+                    "response_schema": ScamAnalysisResult,
+                    "temperature": 0.2,
+                    "max_output_tokens": 1000,
+                }
+                try:
+                    config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=1)
+                except Exception:
+                    pass
 
-                response = client.models.generate_content(
-                    model=current_model,
-                    contents=user_prompt,
-                    config=config
-                )
+                config = types.GenerateContentConfig(**config_kwargs)
+
+                try:
+                    response = client.models.generate_content(
+                        model=current_model,
+                        contents=user_prompt,
+                        config=config
+                    )
+                except Exception as gen_err:
+                    if "thinking" in str(gen_err).lower() or "INVALID_ARGUMENT" in str(gen_err):
+                        fallback_config = types.GenerateContentConfig(
+                            system_instruction=SCAM_ANALYSIS_SYSTEM_PROMPT,
+                            response_mime_type="application/json",
+                            response_schema=ScamAnalysisResult,
+                            temperature=0.2,
+                            max_output_tokens=1000,
+                        )
+                        response = client.models.generate_content(
+                            model=current_model,
+                            contents=user_prompt,
+                            config=fallback_config
+                        )
+                    else:
+                        raise
 
                 raw_text = response.text or ""
                 if not raw_text.strip():

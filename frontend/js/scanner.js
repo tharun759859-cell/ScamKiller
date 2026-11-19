@@ -268,10 +268,12 @@ class ScamBreakerScanner {
       throw new Error("No assessment data available to generate report.");
     }
 
+    const payload = typeof reportData === "string" ? { scan_id: reportData } : reportData;
+
     const response = await fetch(`${this.apiBase}/report/pdf`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(reportData)
+      body: JSON.stringify(payload)
     });
 
     if (!response.ok) {
@@ -283,7 +285,7 @@ class ScamBreakerScanner {
     const downloadUrl = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.download = `SCAM_BREAKER_Report_${reportData.scan_id || reportData.scanId || "assessment"}.pdf`;
+    link.download = `SCAM_BREAKER_Report_${payload.scan_id || payload.scanId || (typeof reportData === "string" ? reportData : "assessment")}.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
