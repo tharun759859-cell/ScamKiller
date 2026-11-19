@@ -122,20 +122,29 @@ class ScamBreakerScanner {
 
   // Transcribes uploaded voice recording via backend Speech-to-Text engine
   // Supports Tamil (ta-IN — default) and English (en-IN / en-US)
-  async transcribeAudio(file, language = "ta-IN", onProgress) {
-    if (!file) {
+  async transcribeAudio(fileOrBlob, language = "ta-IN", onProgress) {
+    if (!fileOrBlob) {
       throw new Error("No audio recording provided.");
     }
 
     if (onProgress) onProgress(20, "Uploading audio");
 
-    const formData = new FormData();
-    formData.append("audio", file);
-    formData.append("language", language);
+    let formData;
+    if (typeof FormData !== "undefined" && fileOrBlob instanceof FormData) {
+      formData = fileOrBlob;
+      if (!formData.has("language")) {
+        formData.append("language", language);
+      }
+    } else {
+      formData = new FormData();
+      const filename = (fileOrBlob && fileOrBlob.name) ? fileOrBlob.name : "recording.webm";
+      formData.append("audio", fileOrBlob, filename);
+      formData.append("language", language);
+    }
 
     if (onProgress) onProgress(45, "Detecting audio format");
 
-    // Send to backend
+    // Send to backend (browser automatically attaches multipart boundary)
     const responsePromise = fetch(`${this.apiBase}/transcribe`, {
       method: "POST",
       body: formData

@@ -304,3 +304,93 @@ audio::-webkit-media-controls-panel {
   color: #e11d48;
   font-weight: 700;
 }
+
+/* Animated Typing / Loading Dots */
+.typing-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 14px;
+}
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #059669;
+  display: inline-block;
+  animation: typingPulse 1.4s infinite ease-in-out both;
+}
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0s;
+}
+@keyframes typingPulse {
+  0%, 80%, 100% {
+    transform: scale(0.4);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Extracted Content & OCR Display */
+.extracted-content-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #1e293b;
+  max-height: 180px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.extracted-content-box.expanded {
+  max-height: 480px;
+}
+
+/* World Map & Threat Jurisdiction Hotspots */
+.radar-map-container {
+  position: relative;
+  background: linear-gradient(135deg, #092318 0%, #0e3323 100%);
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(52, 211, 153, 0.2);
+}
+.radar-hotspot-pin {
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s ease;
+}
+.radar-hotspot-pin:hover {
+  transform: scale(1.35);
+  filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.8));
+}
+
+/* Scam Recovery Assistant */
+.recovery-situation-card {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.recovery-situation-card:hover {
+  transform: translateY(-2px);
+  border-color: #10b981;
+}
+.recovery-situation-card.active {
+  border-color: #059669;
+  background-color: #ecfdf5;
+  box-shadow: 0 4px 12px -2px rgba(5, 150, 105, 0.15);
+}
+.golden-hour-alert {
+  background: linear-gradient(135deg, #fff1f2 0%, #fee2e2 100%);
+  border-left: 4px solid #e11d48;
+}
+

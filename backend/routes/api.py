@@ -337,13 +337,28 @@ def transcribe_audio():
         }), 200
 
     file_obj = request.files.get("audio") or request.files.get("file")
-    if not file_obj or not file_obj.filename:
-        return jsonify({"error": "No audio recording file provided in upload request."}), 400
+    if not file_obj and request.files:
+        file_obj = next(iter(request.files.values()), None)
 
+    if not file_obj:
+        return jsonify({
+            "error": "No audio recording file provided in upload request. Please attach an audio file or blob under 'audio' or 'file'.",
+            "code": "MISSING_AUDIO_FILE",
+            "error_code": "MISSING_AUDIO_FILE"
+        }), 400
+
+    filename = file_obj.filename or "recording.webm"
     language = request.form.get("language", "ta-IN")
     try:
         file_bytes = file_obj.read()
-        res = transcription_service.transcribe(file_bytes, filename=file_obj.filename, language=language)
+        if not file_bytes:
+            return jsonify({
+                "error": "Uploaded audio recording is empty (0 bytes). Please record or select an audio file with audible content.",
+                "code": "EMPTY_AUDIO_FILE",
+                "error_code": "EMPTY_AUDIO_FILE"
+            }), 400
+
+        res = transcription_service.transcribe(file_bytes, filename=filename, language=language)
         return jsonify(res), 200
     except ValueError as val_err:
         return jsonify({"error": str(val_err)}), 400

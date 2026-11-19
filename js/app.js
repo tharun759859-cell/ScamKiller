@@ -151,10 +151,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const titleMap = {
     overview: "Security Overview",
     "scan-history": "Scan History & Audit Log",
-    "scam-trends": "Scam Trends & Radar",
+    "scam-trends": "Scam Radar & World Intelligence",
     "community-intel": "Community Threat Database",
-    "verification-assistant": "Trust Verification Directory",
-    "ai-chat": "AI Scam Advisory Chat",
+    "verification-assistant": "Trust Verification & Directory",
+    "recovery-assistant": "Scam Recovery Assistant",
+    "ai-chat": "AI Advisory Assistant",
     settings: "System & Privacy Settings"
   };
 
@@ -198,8 +199,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (viewId === "scan-history") loadScanHistory();
     if (viewId === "scam-trends") loadScamTrends();
     if (viewId === "community-intel") loadCommunityIntelligence();
-    if (viewId === "verification-assistant") renderFullTrustDirectory();
-    if (viewId === "ai-chat") openStickyChatPanel();
+    if (viewId === "verification-assistant") initTrustVerificationView();
+    if (viewId === "recovery-assistant") loadRecoveryAssistant();
+    if (viewId === "ai-chat") initFullAiChatView();
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -642,6 +644,86 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // Extracted Content & OCR Text Viewer
+    const extractedBox = document.getElementById("inlineExtractedContentBox");
+    const extractedContainer = document.getElementById("inlineExtractedContentContainer");
+    const engineBadge = document.getElementById("inlineOcrEngineBadge");
+    const metricsBadge = document.getElementById("inlineOcrMetricsBadge");
+    const copyExtractedBtn = document.getElementById("inlineCopyExtractedBtn");
+    const toggleExpandBtn = document.getElementById("inlineToggleExpandContentBtn");
+
+    const contentText = result.submitted_item || result.extracted_text || result.ocr_text || result.target || (scanInput ? scanInput.value : "") || "";
+
+    if (extractedContainer && extractedBox) {
+      if (contentText && contentText.trim()) {
+        extractedContainer.classList.remove("hidden");
+        extractedBox.textContent = contentText;
+
+        const charCount = contentText.length;
+        const wordCount = contentText.trim().split(/\s+/).filter(Boolean).length;
+        if (metricsBadge) {
+          metricsBadge.textContent = `${wordCount} words • ${charCount} chars`;
+        }
+        if (engineBadge) {
+          const engine = result.ocr_engine ? result.ocr_engine.toUpperCase() : (result.type === "screenshot" ? "TESSERACT OCR" : "ANALYZER");
+          engineBadge.textContent = engine;
+        }
+
+        if (copyExtractedBtn) {
+          copyExtractedBtn.onclick = () => {
+            navigator.clipboard.writeText(contentText).then(() => {
+              showToast("Extracted content copied to clipboard!", "success");
+            }).catch(() => {
+              showToast("Could not copy content.", "error");
+            });
+          };
+        }
+
+        if (toggleExpandBtn) {
+          toggleExpandBtn.onclick = () => {
+            const isExpanded = extractedBox.classList.toggle("expanded");
+            toggleExpandBtn.innerHTML = isExpanded
+              ? `<span class="material-symbols-outlined text-xs">unfold_less</span><span>Collapse</span>`
+              : `<span class="material-symbols-outlined text-xs">unfold_more</span><span>Expand</span>`;
+          };
+        }
+      } else {
+        extractedContainer.classList.add("hidden");
+      }
+    }
+
+    // Scam Recovery Assistant Callout Banner
+    const recoveryCallout = document.getElementById("inlineRecoveryCallout");
+    const launchRecoveryBtn = document.getElementById("inlineLaunchRecoveryBtn");
+    if (recoveryCallout) {
+      if (riskLevel.includes("suspicious") || riskLevel.includes("caution")) {
+        recoveryCallout.classList.remove("hidden");
+        if (launchRecoveryBtn) {
+          launchRecoveryBtn.onclick = () => {
+            navigateTo("recovery-assistant");
+          };
+        }
+      } else {
+        recoveryCallout.classList.add("hidden");
+      }
+    }
+
+    // Contextual Cybercrime Helpline Section
+    const officialHelpSection = document.getElementById("inlineOfficialHelpSection");
+    if (officialHelpSection) {
+      const lowerText = (contentText + " " + (result.explanation || "")).toLowerCase();
+      const isFinancialOrCritical = riskLevel.includes("suspicious") ||
+        lowerText.includes("bank") || lowerText.includes("otp") || lowerText.includes("upi") ||
+        lowerText.includes("money") || lowerText.includes("police") || lowerText.includes("arrest") ||
+        lowerText.includes("discom") || lowerText.includes("electricity");
+
+      if (isFinancialOrCritical) {
+        officialHelpSection.classList.remove("hidden");
+      } else {
+        officialHelpSection.classList.add("hidden");
+      }
+    }
+
     // Reveal card with smooth scroll
     inlineResultCard.classList.remove("hidden");
     inlineResultCard.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -844,30 +926,262 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function renderFullTrustDirectory() {
+  function initTrustVerificationView() {
+    renderFullTrustDirectory();
+
+    const searchInput = document.getElementById("verificationSearchInput");
+    if (searchInput) {
+      searchInput.oninput = () => {
+        const query = searchInput.value.toLowerCase().trim();
+        renderFullTrustDirectory(query);
+      };
+    }
+
+    const verifyBtn = document.getElementById("trustVerifyBtn");
+    const verifierInput = document.getElementById("trustVerifierInput");
+
+    if (verifyBtn && verifierInput) {
+      verifyBtn.onclick = () => handleLiveTrustCheck();
+      verifierInput.onkeydown = (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          handleLiveTrustCheck();
+        }
+      };
+    }
+  }
+
+  function renderFullTrustDirectory(filterQuery = "") {
     const grid = document.getElementById("verificationDirectoryGrid");
     if (!grid) return;
 
-    const directory = (window.SCAM_KILLER_DATA && window.SCAM_KILLER_DATA.trustDirectory) || [];
+    const dataStore = window.SCAM_BREAKER_DATA || window.SCAM_KILLER_DATA || {};
+    const directory = dataStore.trustDirectory || [];
     grid.innerHTML = "";
 
-    directory.forEach(item => {
+    const filtered = filterQuery
+      ? directory.filter(item =>
+          item.name.toLowerCase().includes(filterQuery) ||
+          item.domain.toLowerCase().includes(filterQuery) ||
+          (item.smsHeader && item.smsHeader.toLowerCase().includes(filterQuery)) ||
+          item.category.toLowerCase().includes(filterQuery)
+        )
+      : directory;
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `
+        <div class="col-span-2 p-6 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center text-xs text-slate-400">
+          No registered institutions match "${escapeHtml(filterQuery)}". Try searching by bank name, domain, or SMS header.
+        </div>
+      `;
+      return;
+    }
+
+    filtered.forEach(item => {
       const card = document.createElement("div");
       card.className = "p-4 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-emerald-300 transition-all space-y-2.5 text-xs shadow-sm";
       card.innerHTML = `
         <div class="flex items-center justify-between">
-          <span class="font-bold text-slate-900 text-sm">${item.name}</span>
-          <span class="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">${item.status}</span>
+          <span class="font-bold text-slate-900 text-sm">${escapeHtml(item.name)}</span>
+          <span class="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">${escapeHtml(item.status)}</span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-          <div><span class="text-slate-400 block uppercase text-[9px]">Official Portal:</span><span class="font-mono font-semibold text-emerald-700">${item.domain}</span></div>
-          <div><span class="text-slate-400 block uppercase text-[9px]">Helpline:</span><span class="font-mono text-slate-800">${item.helpline}</span></div>
+          <div><span class="text-slate-400 block uppercase text-[9px]">Official Portal:</span><span class="font-mono font-semibold text-emerald-700">${escapeHtml(item.domain)}</span></div>
+          <div><span class="text-slate-400 block uppercase text-[9px]">Helpline:</span><span class="font-mono text-slate-800">${escapeHtml(item.helpline)}</span></div>
         </div>
-        <p class="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-200">${item.rule}</p>
-        <span class="text-[10px] text-slate-400 font-mono block">Citation: ${item.citation}</span>
+        ${item.smsHeader ? `<div class="text-[11px]"><span class="text-slate-400 block uppercase text-[9px]">TRAI SMS Headers:</span><span class="font-mono text-slate-700 font-semibold">${escapeHtml(item.smsHeader)}</span></div>` : ""}
+        <p class="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-200">${escapeHtml(item.rule)}</p>
+        <span class="text-[10px] text-slate-400 font-mono block">Citation: ${escapeHtml(item.citation)}</span>
       `;
       grid.appendChild(card);
     });
+  }
+
+  function handleLiveTrustCheck() {
+    const inputEl = document.getElementById("trustVerifierInput");
+    const resultCard = document.getElementById("trustVerifierResultCard");
+    const resultIcon = document.getElementById("trustResultIcon");
+    const resultTitle = document.getElementById("trustResultTitle");
+    const resultBadge = document.getElementById("trustResultBadge");
+    const resultEntity = document.getElementById("trustResultEntity");
+    const resultList = document.getElementById("trustResultEvidenceList");
+    const resultAdvice = document.getElementById("trustResultAdvice");
+
+    if (!inputEl || !resultCard) return;
+    const rawVal = inputEl.value.trim();
+    if (!rawVal) {
+      showToast("Please enter a domain, SMS header, or phone number to verify.", "error");
+      return;
+    }
+
+    const dataStore = window.SCAM_BREAKER_DATA || window.SCAM_KILLER_DATA || {};
+    const directory = dataStore.trustDirectory || [];
+
+    const cleanVal = rawVal.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
+    let verdict = "caution";
+    let title = "Unverified Identifier";
+    let entityName = "No official match in regulatory DLT / RBI registries";
+    let evidence = [];
+    let advice = "Exercise caution. Do not share OTPs, passwords, or personal banking credentials.";
+    let badgeClass = "bg-amber-100 text-amber-900 border border-amber-300";
+    let iconName = "help";
+
+    // 1. Check Directory Match
+    const matched = directory.find(d => {
+      const dDom = d.domain.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
+      const dHeaders = (d.smsHeader || "").toLowerCase().split(",").map(s => s.trim());
+      const dName = d.name.toLowerCase();
+      return cleanVal === dDom ||
+             cleanVal.endsWith("." + dDom) ||
+             dHeaders.some(h => cleanVal === h || cleanVal.endsWith("-" + h) || cleanVal.endsWith(h)) ||
+             cleanVal.includes(dName);
+    });
+
+    if (matched) {
+      verdict = "verified";
+      title = `Official Registry Match: ${matched.name}`;
+      entityName = `Registered Authority: ${matched.citation}`;
+      badgeClass = "bg-emerald-100 text-emerald-800 border border-emerald-300";
+      iconName = "verified";
+      evidence.push(`Domain or SMS header matches verified official profile for ${matched.name}.`);
+      evidence.push(`Official registered portal: ${matched.domain}`);
+      evidence.push(`Official contact / helpline: ${matched.helpline}`);
+      evidence.push(`Security Rule: ${matched.rule}`);
+      advice = "This identifier matches an authentic institution directory entry. Still ensure you are on the exact domain before entering credentials.";
+    } else if (cleanVal.endsWith(".gov.in") || cleanVal.endsWith(".nic.in")) {
+      verdict = "verified";
+      title = "Official Government Domain (.gov.in / .nic.in)";
+      entityName = "National Informatics Centre (NIC) / Government of India Registered";
+      badgeClass = "bg-emerald-100 text-emerald-800 border border-emerald-300";
+      iconName = "verified";
+      evidence.push("Domain uses official reserved government TLD (.gov.in or .nic.in).");
+      evidence.push("Restricted top-level domain allocated exclusively to authorized ministries and state agencies.");
+      advice = "Legitimate official government web portal. Always verify HTTPS certificate in the browser address bar.";
+    } else if (/\.(top|xyz|club|work|buzz|click|online|shop|live|cfd|icu|rest|sbs)$/i.test(cleanVal)) {
+      verdict = "suspicious";
+      title = "High-Risk Cheap / Ephemeral Domain Extension";
+      entityName = "Potentially Malicious Ephemeral Host";
+      badgeClass = "bg-rose-100 text-rose-800 border border-rose-300";
+      iconName = "gpp_bad";
+      evidence.push(`Domain uses high-risk cheap TLD (${cleanVal.split('.').pop()}) heavily favored by phishing syndicates.`);
+      evidence.push("Legitimate banks and postal services in India never host transactional portals on cheap generic TLDs.");
+      evidence.push("No corporate entity verification found in TRAI / RBI database.");
+      advice = "Do NOT visit this link or input any personal or financial information. Immediately block the sender.";
+    } else if (/^(\+?91)?[6-9]\d{9}$/.test(rawVal.replace(/[\s-]/g, ""))) {
+      verdict = "suspicious";
+      title = "Personal 10-Digit Mobile Number (Not an Official Bank Header)";
+      entityName = "Unregistered Individual SIM";
+      badgeClass = "bg-rose-100 text-rose-800 border border-rose-300";
+      iconName = "warning";
+      evidence.push("Under TRAI regulations, commercial banks and utilities must send official SMS via registered 6-character alpha headers (e.g. SBIPAY, HDFCBK, AXISBK).");
+      evidence.push("Legitimate financial institutions NEVER send urgent KYC suspension alerts from standard 10-digit mobile numbers.");
+      evidence.push("High probability of a spoofed sender or burner SIM card used by scammers.");
+      advice = "Do NOT click links sent by this number. Report the number on the Chakshu portal (sancharsaathi.gov.in).";
+    } else {
+      verdict = "caution";
+      title = "Unrecognized Identifier";
+      entityName = "Not listed in certified banking or regulatory directory";
+      badgeClass = "bg-amber-100 text-amber-900 border border-amber-300";
+      iconName = "shield";
+      evidence.push("No direct record found in current verified banking, postal, or government directories.");
+      evidence.push("Entity could be a third-party commercial service or an unverified sender.");
+      advice = "Verify directly with the organization using their official published customer care number from your passbook or physical card.";
+    }
+
+    resultCard.classList.remove("hidden");
+    if (resultIcon) {
+      resultIcon.textContent = iconName;
+      resultIcon.className = `material-symbols-outlined text-lg ${verdict === 'verified' ? 'text-emerald-600' : verdict === 'suspicious' ? 'text-rose-600' : 'text-amber-600'}`;
+    }
+    if (resultTitle) resultTitle.textContent = title;
+    if (resultBadge) {
+      resultBadge.className = `text-[10px] font-mono px-2.5 py-0.5 rounded-full font-bold uppercase ${badgeClass}`;
+      resultBadge.textContent = verdict === "verified" ? "VERIFIED OFFICIAL" : verdict === "suspicious" ? "HIGH RISK DETECTED" : "UNVERIFIED / CAUTION";
+    }
+    if (resultEntity) resultEntity.textContent = entityName;
+    if (resultList) {
+      resultList.innerHTML = evidence.map(e => `<li>${escapeHtml(e)}</li>`).join("");
+    }
+    if (resultAdvice) resultAdvice.textContent = advice;
+  }
+
+  function loadRecoveryAssistant(defaultSituation = "money_sent") {
+    const situationCards = document.querySelectorAll(".recovery-situation-card[data-situation]");
+    situationCards.forEach(card => {
+      card.onclick = () => {
+        situationCards.forEach(c => c.classList.remove("active"));
+        card.classList.add("active");
+        const sitKey = card.getAttribute("data-situation");
+        renderRecoverySituation(sitKey);
+      };
+    });
+
+    renderRecoverySituation(defaultSituation);
+  }
+
+  function renderRecoverySituation(situationKey) {
+    const dataStore = window.SCAM_BREAKER_DATA || window.SCAM_KILLER_DATA || {};
+    const guidance = dataStore.recoveryGuidance || {};
+    const situations = guidance.situations || {};
+    const sitData = situations[situationKey] || situations["money_sent"] || {
+      title: "Scam Incident Response",
+      urgency: "CRITICAL PRIORITY",
+      urgencyColor: "bg-rose-100 text-rose-800",
+      steps: [
+        "Immediately contact your bank's 24x7 fraud reporting desk to request an account/card freeze.",
+        "Dial 1930 to file an immediate complaint on the National Cybercrime Reporting Portal (NCRP).",
+        "Preserve transaction SMS, UTR reference numbers, and screenshots for legal evidence."
+      ]
+    };
+
+    const urgencyEl = document.getElementById("recoveryPlanUrgency");
+    const titleEl = document.getElementById("recoveryPlanTitle");
+    const stepsListEl = document.getElementById("recoveryStepsList");
+    const helplinesGrid = document.getElementById("recoveryBankHelplinesGrid");
+    const copyBtn = document.getElementById("copyRecoveryChecklistBtn");
+
+    if (urgencyEl) {
+      urgencyEl.textContent = sitData.urgency || "CRITICAL PRIORITY";
+      urgencyEl.className = `text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${sitData.urgencyColor || "bg-rose-100 text-rose-800"}`;
+    }
+    if (titleEl) {
+      titleEl.textContent = `Action Plan: ${sitData.title}`;
+    }
+    if (stepsListEl) {
+      stepsListEl.innerHTML = (sitData.steps || []).map((step, idx) => `
+        <li class="flex items-start gap-2.5 p-2 rounded-lg bg-white border border-slate-200 shadow-2xs">
+          <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-mono font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">${idx + 1}</span>
+          <span class="leading-relaxed">${escapeHtml(step)}</span>
+        </li>
+      `).join("");
+    }
+
+    if (helplinesGrid && guidance.bankHelplines) {
+      helplinesGrid.innerHTML = guidance.bankHelplines.map(b => `
+        <div class="p-3 rounded-xl bg-white border border-slate-200 text-xs space-y-1.5 shadow-2xs">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-900">${escapeHtml(b.name)}</span>
+            <span class="text-[9px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">24x7</span>
+          </div>
+          <div class="text-[11px] text-slate-600 flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs text-rose-600">call</span>
+            <a href="tel:${escapeHtml(b.phone.replace(/\s+/g, ''))}" class="font-mono font-bold text-slate-800 hover:text-rose-600">${escapeHtml(b.phone)}</a>
+          </div>
+          <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(b.smsBlock)}</div>
+        </div>
+      `).join("");
+    }
+
+    if (copyBtn) {
+      copyBtn.onclick = () => {
+        const textToCopy = `SCAM BREAKER — EMERGENCY RECOVERY CHECKLIST\nSituation: ${sitData.title}\nUrgency: ${sitData.urgency}\n\nImmediate Action Steps:\n${(sitData.steps || []).map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\nNational Cybercrime Reporting:\n• Call 1930 (Immediate inter-bank fund lien freeze)\n• File online: https://cybercrime.gov.in\n• Keep UTR/transaction reference numbers handy\n\nSafety Notice: Law enforcement and SCAM BREAKER never charge any fee to recover money. Never pay third-party recovery scammers.`;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          showToast("Action checklist copied to clipboard!", "success");
+        }).catch(() => {
+          showToast("Could not copy checklist.", "error");
+        });
+      };
+    }
   }
 
   // ================================================================
@@ -1279,6 +1593,66 @@ document.addEventListener("DOMContentLoaded", () => {
           console.error("Failed to load community patterns:", patErr);
         }
       }
+
+      // Wire Dual Tab Switching: Official Jurisdiction vs Community Velocity
+      const tabOfficial = document.getElementById("radarTabOfficial");
+      const tabCommunity = document.getElementById("radarTabCommunity");
+      const contentOfficial = document.getElementById("radarOfficialContent");
+      const contentCommunity = document.getElementById("radarCommunityContent");
+
+      if (tabOfficial && tabCommunity && contentOfficial && contentCommunity) {
+        tabOfficial.onclick = () => {
+          tabOfficial.classList.add("bg-white", "text-emerald-800", "shadow-sm", "border-slate-200/80");
+          tabOfficial.classList.remove("text-slate-600");
+          tabCommunity.classList.remove("bg-white", "text-emerald-800", "shadow-sm", "border-slate-200/80");
+          tabCommunity.classList.add("text-slate-600");
+          contentOfficial.style.display = "block";
+          contentCommunity.style.display = "none";
+        };
+
+        tabCommunity.onclick = () => {
+          tabCommunity.classList.add("bg-white", "text-emerald-800", "shadow-sm", "border-slate-200/80");
+          tabCommunity.classList.remove("text-slate-600");
+          tabOfficial.classList.remove("bg-white", "text-emerald-800", "shadow-sm", "border-slate-200/80");
+          tabOfficial.classList.add("text-slate-600");
+          contentCommunity.style.display = "block";
+          contentOfficial.style.display = "none";
+        };
+      }
+
+      // Wire SVG World Map Interactive Hotspot Pins
+      const hotspotPins = document.querySelectorAll(".radar-hotspot-pin");
+      hotspotPins.forEach(pin => {
+        pin.onclick = () => {
+          const advId = pin.getAttribute("data-advisory-id");
+          const advisories = (window.SCAM_BREAKER_DATA && window.SCAM_BREAKER_DATA.officialAdvisories) || [];
+          const adv = advisories.find(a => a.id === advId);
+          if (!adv) return;
+
+          const titleEl = document.getElementById("radarBriefingTitle");
+          const jurisEl = document.getElementById("radarBriefingJurisdiction");
+          const summaryEl = document.getElementById("radarBriefingSummary");
+          const tacticsEl = document.getElementById("radarBriefingTactics");
+          const stepsList = document.getElementById("radarBriefingSteps");
+          const defenseList = document.getElementById("radarBriefingDefense");
+
+          if (titleEl) titleEl.textContent = `${adv.category} (${adv.source})`;
+          if (jurisEl) jurisEl.textContent = `${adv.jurisdiction} • ${adv.recency}`;
+          if (summaryEl) summaryEl.textContent = adv.summary;
+
+          if (tacticsEl && stepsList && defenseList) {
+            tacticsEl.classList.remove("hidden");
+            const steps = adv.howItWorks || adv.warningSigns || [];
+            stepsList.innerHTML = steps.map(s => `<li>${escapeHtml(s)}</li>`).join("");
+            const def = adv.safetyRecommendations || [];
+            defenseList.innerHTML = def.map(d => `<li>${escapeHtml(d)}</li>`).join("");
+          }
+
+          // Visual feedback on selected pin
+          hotspotPins.forEach(p => p.classList.remove("opacity-100", "scale-110"));
+          pin.classList.add("opacity-100", "scale-110");
+        };
+      });
     } catch (err) {
       console.error("Failed to load trends:", err);
     }
@@ -1539,11 +1913,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         chatAudioChunks = [];
 
-        const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-          ? "audio/webm;codecs=opus"
-          : (MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "");
-
-        chatMediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+        const recOptions = { audioBitsPerSecond: 32000 };
+        if (mimeType) recOptions.mimeType = mimeType;
+        chatMediaRecorder = new MediaRecorder(stream, recOptions);
 
         chatMediaRecorder.ondataavailable = (e) => {
           if (e.data && e.data.size > 0) {
@@ -1553,12 +1925,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
         chatMediaRecorder.onstart = () => {
           if (chatVoiceRecordingBar) chatVoiceRecordingBar.classList.remove("hidden");
-          chatVoiceRecordBtn.classList.add("text-rose-600", "animate-pulse");
+          const fullVoiceBar = document.getElementById("fullChatVoiceBar");
+          if (fullVoiceBar) fullVoiceBar.classList.remove("hidden");
+          if (chatVoiceRecordBtn) chatVoiceRecordBtn.classList.add("text-rose-600", "animate-pulse");
+          const fullVoiceBtn = document.getElementById("fullChatVoiceRecordBtn");
+          if (fullVoiceBtn) fullVoiceBtn.classList.add("text-rose-600", "animate-pulse");
+
           chatRecordingSeconds = 0;
           if (chatVoiceTimer) chatVoiceTimer.textContent = "00:00";
+          const fullTimer = document.getElementById("fullChatVoiceTimer");
+          if (fullTimer) fullTimer.textContent = "00:00";
+
           chatRecordingInterval = setInterval(() => {
             chatRecordingSeconds++;
-            if (chatVoiceTimer) chatVoiceTimer.textContent = formatRecordTimer(chatRecordingSeconds);
+            const formattedTime = formatRecordTimer(chatRecordingSeconds);
+            if (chatVoiceTimer) chatVoiceTimer.textContent = formattedTime;
+            if (fullTimer) fullTimer.textContent = formattedTime;
             if (chatRecordingSeconds >= 60) {
               if (chatVoiceStopBtn) chatVoiceStopBtn.click();
             }
@@ -1573,194 +1955,255 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  if (chatVoiceCancelBtn) {
-    chatVoiceCancelBtn.addEventListener("click", () => {
-      if (chatMediaRecorder && chatMediaRecorder.state !== "inactive") {
-        chatMediaRecorder.onstop = null;
-        chatMediaRecorder.stop();
-        if (chatMediaRecorder.stream) {
-          chatMediaRecorder.stream.getTracks().forEach(t => t.stop());
-        }
+  function handleCancelVoiceRecording() {
+    if (chatMediaRecorder && chatMediaRecorder.state !== "inactive") {
+      chatMediaRecorder.onstop = null;
+      chatMediaRecorder.stop();
+      if (chatMediaRecorder.stream) {
+        chatMediaRecorder.stream.getTracks().forEach(t => t.stop());
       }
-      chatAudioChunks = [];
-      stopChatRecordingCleanup();
-      showToast("Voice recording cancelled.", "info");
-    });
+    }
+    chatAudioChunks = [];
+    stopChatRecordingCleanup();
+    const fullVoiceBar = document.getElementById("fullChatVoiceBar");
+    if (fullVoiceBar) fullVoiceBar.classList.add("hidden");
+    const fullVoiceBtn = document.getElementById("fullChatVoiceRecordBtn");
+    if (fullVoiceBtn) fullVoiceBtn.classList.remove("text-rose-600", "animate-pulse");
+    showToast("Voice recording cancelled.", "info");
   }
 
-  if (chatVoiceStopBtn) {
-    chatVoiceStopBtn.addEventListener("click", () => {
-      if (!chatMediaRecorder || chatMediaRecorder.state === "inactive") {
-        stopChatRecordingCleanup();
+  if (chatVoiceCancelBtn) {
+    chatVoiceCancelBtn.addEventListener("click", handleCancelVoiceRecording);
+  }
+  const fullChatVoiceCancelBtn = document.getElementById("fullChatVoiceCancelBtn");
+  if (fullChatVoiceCancelBtn) {
+    fullChatVoiceCancelBtn.addEventListener("click", handleCancelVoiceRecording);
+  }
+
+  function handleStopVoiceRecording() {
+    if (!chatMediaRecorder || chatMediaRecorder.state === "inactive") {
+      stopChatRecordingCleanup();
+      return;
+    }
+
+    chatMediaRecorder.onstop = async () => {
+      if (chatMediaRecorder.stream) {
+        chatMediaRecorder.stream.getTracks().forEach(t => t.stop());
+      }
+
+      const blobType = chatMediaRecorder.mimeType || "audio/webm";
+      const audioBlob = new Blob(chatAudioChunks, { type: blobType });
+      stopChatRecordingCleanup();
+      const fullVoiceBar = document.getElementById("fullChatVoiceBar");
+      if (fullVoiceBar) fullVoiceBar.classList.add("hidden");
+      const fullVoiceBtn = document.getElementById("fullChatVoiceRecordBtn");
+      if (fullVoiceBtn) fullVoiceBtn.classList.remove("text-rose-600", "animate-pulse");
+
+      if (audioBlob.size < 100) {
+        showToast("Recording was too short or empty.", "error");
         return;
       }
 
-      chatMediaRecorder.onstop = async () => {
-        if (chatMediaRecorder.stream) {
-          chatMediaRecorder.stream.getTracks().forEach(t => t.stop());
-        }
+      showToast("Transcribing speech with AI audio engine...", "info");
+      try {
+        const scannerInstance = window.scamBreakerScanner || window.scamKillerScanner;
+        let transcriptText = "";
 
-        const blobType = chatMediaRecorder.mimeType || "audio/webm";
-        const audioBlob = new Blob(chatAudioChunks, { type: blobType });
-        stopChatRecordingCleanup();
-
-        if (audioBlob.size < 100) {
-          showToast("Recording was too short or empty.", "error");
-          return;
-        }
-
-        showToast("Transcribing speech with AI audio engine...", "info");
-        try {
+        if (scannerInstance && typeof scannerInstance.transcribeAudio === "function") {
+          const res = await scannerInstance.transcribeAudio(audioBlob, "ta-IN");
+          transcriptText = (res && (res.transcription || res.text || res.transcript)) || "";
+        } else {
           const formData = new FormData();
-          formData.append("file", audioBlob, "voice_input.webm");
+          formData.append("audio", audioBlob, "voice_input.webm");
           formData.append("language", "ta-IN");
-
-          const scannerInstance = window.scamBreakerScanner || window.scamKillerScanner;
-          let transcriptText = "";
-
-          if (scannerInstance && typeof scannerInstance.transcribeAudio === "function") {
-            const res = await scannerInstance.transcribeAudio(formData);
-            transcriptText = (res && (res.transcription || res.text || res.transcript)) || "";
-          } else {
-            const res = await fetch(`${getApiBase()}/transcribe`, {
-              method: "POST",
-              body: formData
-            });
-            const data = await res.json();
-            transcriptText = (data && (data.transcription || data.text || data.transcript)) || "";
-          }
-
-          if (transcriptText && transcriptText.trim()) {
-            if (chatInputText) {
-              const existing = chatInputText.value.trim();
-              chatInputText.value = existing ? `${existing} ${transcriptText.trim()}` : transcriptText.trim();
-              chatInputText.focus();
-            }
-            showToast("Speech transcribed! Review and press Send.", "success");
-          } else {
-            showToast("Could not recognize any speech. Please try speaking clearly or typing.", "error");
-          }
-        } catch (err) {
-          console.error("Transcription error:", err);
-          showToast("Transcription failed: " + (err.message || err), "error");
+          const res = await fetch(`${getApiBase()}/transcribe`, {
+            method: "POST",
+            body: formData
+          });
+          const data = await res.json();
+          transcriptText = (data && (data.transcription || data.text || data.transcript)) || "";
         }
-      };
 
-      chatMediaRecorder.stop();
+        if (transcriptText && transcriptText.trim()) {
+          const fullInput = document.getElementById("fullChatInputText");
+          [chatInputText, fullInput].forEach(inp => {
+            if (inp) {
+              const existing = inp.value.trim();
+              inp.value = existing ? `${existing} ${transcriptText.trim()}` : transcriptText.trim();
+              inp.focus();
+            }
+          });
+          showToast("Speech transcribed! Review and press Send.", "success");
+        } else {
+          showToast("Could not recognize any speech. Please try speaking clearly or typing.", "error");
+        }
+      } catch (err) {
+        console.error("Transcription error:", err);
+        showToast("Transcription failed: " + (err.message || err), "error");
+      }
+    };
+
+    chatMediaRecorder.stop();
+  }
+
+  if (chatVoiceStopBtn) {
+    chatVoiceStopBtn.addEventListener("click", handleStopVoiceRecording);
+  }
+  const fullChatVoiceStopBtn = document.getElementById("fullChatVoiceStopBtn");
+  if (fullChatVoiceStopBtn) {
+    fullChatVoiceStopBtn.addEventListener("click", handleStopVoiceRecording);
+  }
+
+  // Wire full-screen chat voice record button
+  const fullChatVoiceRecordBtn = document.getElementById("fullChatVoiceRecordBtn");
+  if (fullChatVoiceRecordBtn && chatVoiceRecordBtn) {
+    fullChatVoiceRecordBtn.addEventListener("click", () => {
+      chatVoiceRecordBtn.click();
     });
   }
 
   // Chat Messaging
   function appendChatMessage(sender, text, isError = false) {
-    if (!chatMessagesContainer) return;
     const isUser = sender === "user";
-    const bubble = document.createElement("div");
-    bubble.className = `flex items-start gap-2.5 ${isUser ? "justify-end" : ""}`;
+    const containers = [chatMessagesContainer, document.getElementById("fullChatMessagesContainer")].filter(Boolean);
 
-    if (isUser) {
-      bubble.innerHTML = `
-        <div class="chat-bubble-user p-3 rounded-xl max-w-lg text-xs leading-relaxed shadow-sm bg-[#092318] text-white">
-          ${escapeHtml(text)}
-        </div>
-        <div class="w-7 h-7 rounded-full bg-slate-300 text-slate-800 flex items-center justify-center text-xs shrink-0 font-bold">You</div>
-      `;
-    } else {
-      const bubbleClass = isError
-        ? "chat-bubble-assistant p-3 rounded-xl max-w-lg text-xs leading-relaxed shadow-sm bg-rose-50 border border-rose-200 text-rose-900"
-        : "chat-bubble-assistant p-3 rounded-xl max-w-lg text-xs leading-relaxed shadow-sm bg-white border border-slate-200 text-slate-800";
+    containers.forEach(container => {
+      const bubble = document.createElement("div");
+      bubble.className = `flex items-start gap-2.5 ${isUser ? "justify-end" : ""}`;
 
-      const badgeText = isError ? "AI Notice" : "AI Advisory Intelligence";
-      const badgeColor = isError ? "text-rose-600" : "text-emerald-700";
-      const formatted = escapeHtml(text).replace(/\n/g, "<br>");
-
-      bubble.innerHTML = `
-        <div class="w-7 h-7 rounded-full bg-[#092318] text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">AI</div>
-        <div class="${bubbleClass}">
-          <div>${formatted}</div>
-          <div class="mt-1.5 pt-1 border-t border-slate-100 text-[10px] ${badgeColor} font-mono flex items-center gap-1">
-            <span class="material-symbols-outlined text-[11px]">psychology</span>
-            <span>${badgeText}</span>
+      if (isUser) {
+        bubble.innerHTML = `
+          <div class="chat-bubble-user p-3 rounded-xl max-w-lg text-xs leading-relaxed shadow-sm bg-[#092318] text-white">
+            ${escapeHtml(text)}
           </div>
-        </div>
-      `;
-    }
+          <div class="w-7 h-7 rounded-full bg-slate-300 text-slate-800 flex items-center justify-center text-xs shrink-0 font-bold">You</div>
+        `;
+      } else {
+        const bubbleClass = isError
+          ? "chat-bubble-assistant p-3 rounded-xl max-w-lg text-xs leading-relaxed shadow-sm bg-rose-50 border border-rose-200 text-rose-900"
+          : "chat-bubble-assistant p-3 rounded-xl max-w-lg text-xs leading-relaxed shadow-sm bg-white border border-slate-200 text-slate-800";
 
-    chatMessagesContainer.appendChild(bubble);
-    chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
-  }
+        const badgeText = isError ? "AI Notice" : "AI Advisory Intelligence";
+        const badgeColor = isError ? "text-rose-600" : "text-emerald-700";
+        const formatted = escapeHtml(text).replace(/\n/g, "<br>");
 
-  function appendChatTypingIndicator() {
-    if (!chatMessagesContainer) return null;
-    const typingId = `chat-typing-${Date.now()}`;
-    const bubble = document.createElement("div");
-    bubble.id = typingId;
-    bubble.className = "flex items-start gap-2.5";
-    bubble.innerHTML = `
-      <div class="w-7 h-7 rounded-full bg-[#092318] text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">AI</div>
-      <div class="chat-bubble-assistant p-3 rounded-xl max-w-lg text-xs leading-relaxed shadow-sm bg-slate-50 border border-slate-200 text-slate-500 flex items-center gap-2">
-        <span class="material-symbols-outlined text-sm animate-spin text-emerald-600">sync</span>
-        <span>AI Advisory is analyzing...</span>
-      </div>
-    `;
-    chatMessagesContainer.appendChild(bubble);
-    chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
-    return typingId;
-  }
-
-  if (chatForm && chatInputText) {
-    chatForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const q = chatInputText.value.trim();
-      if (!q) return;
-
-      appendChatMessage("user", q);
-      chatConversationHistory.push({ role: "user", content: q });
-      chatInputText.value = "";
-
-      let origBtnHtml = "";
-      if (chatSubmitBtn) {
-        chatSubmitBtn.disabled = true;
-        origBtnHtml = chatSubmitBtn.innerHTML;
-        chatSubmitBtn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">refresh</span>`;
+        bubble.innerHTML = `
+          <div class="w-7 h-7 rounded-full bg-[#092318] text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">AI</div>
+          <div class="${bubbleClass}">
+            <div>${formatted}</div>
+            <div class="mt-1.5 pt-1 border-t border-slate-100 text-[10px] ${badgeColor} font-mono flex items-center gap-1">
+              <span class="material-symbols-outlined text-[11px]">psychology</span>
+              <span>${badgeText}</span>
+            </div>
+          </div>
+        `;
       }
-      chatInputText.disabled = true;
-      const typingId = appendChatTypingIndicator();
 
-      try {
-        const scannerInstance = window.scamBreakerScanner || window.scamKillerScanner;
-        const response = await scannerInstance.sendChatMessage(chatConversationHistory);
-        const typingEl = document.getElementById(typingId);
-        if (typingEl) typingEl.remove();
-
-        const reply = response && (response.reply || response.content);
-        if (reply && String(reply).trim()) {
-          appendChatMessage("ai", String(reply).trim());
-          chatConversationHistory.push({ role: "assistant", content: String(reply).trim() });
-        } else {
-          appendChatMessage("ai", "I'm sorry, I could not generate a response. Please try asking a specific question or retry in a moment.", true);
-        }
-      } catch (err) {
-        const typingEl = document.getElementById(typingId);
-        if (typingEl) typingEl.remove();
-        console.error("AI chat error:", err);
-        appendChatMessage("ai", `Security Advisory Notice: ${err.message}\n\nEmergency Guidance: If you believe you are experiencing active fraud, immediately contact your bank to freeze transactions and report to cybercrime.gov.in (Helpline: 1930).`, true);
-      } finally {
-        if (chatSubmitBtn) {
-          chatSubmitBtn.disabled = false;
-          if (origBtnHtml) chatSubmitBtn.innerHTML = origBtnHtml;
-        }
-        chatInputText.disabled = false;
-        chatInputText.focus();
-      }
+      container.appendChild(bubble);
+      container.scrollTop = container.scrollHeight;
     });
   }
 
-  chatPromptChips.forEach(chip => {
-    chip.addEventListener("click", () => {
-      if (chatInputText) {
-        chatInputText.value = chip.textContent.trim();
-        chatForm.dispatchEvent(new Event("submit"));
+  function appendChatTypingIndicator() {
+    const typingId = `chat-typing-${Date.now()}`;
+    const html = `
+      <div class="w-7 h-7 rounded-full bg-[#092318] text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">AI</div>
+      <div class="chat-bubble-assistant p-3 rounded-xl max-w-lg text-xs leading-relaxed shadow-sm bg-slate-50 border border-slate-200 text-slate-700 flex items-center gap-2">
+        <div class="typing-dots flex items-center gap-1.5 py-1 px-1">
+          <span class="typing-dot w-2 h-2 rounded-full bg-emerald-600"></span>
+          <span class="typing-dot w-2 h-2 rounded-full bg-emerald-600"></span>
+          <span class="typing-dot w-2 h-2 rounded-full bg-emerald-600"></span>
+        </div>
+        <span class="text-[11px] text-slate-500 font-mono">Analyzing question...</span>
+      </div>
+    `;
+
+    [chatMessagesContainer, document.getElementById("fullChatMessagesContainer")].forEach(container => {
+      if (container) {
+        const bubble = document.createElement("div");
+        bubble.id = typingId;
+        bubble.className = "flex items-start gap-2.5";
+        bubble.innerHTML = html;
+        container.appendChild(bubble);
+        container.scrollTop = container.scrollHeight;
       }
+    });
+
+    return typingId;
+  }
+
+  let isSubmittingChat = false;
+
+  async function handleChatSubmit(promptText) {
+    if (isSubmittingChat) return;
+    const q = (promptText || "").trim();
+    if (!q) return;
+
+    isSubmittingChat = true;
+    appendChatMessage("user", q);
+    chatConversationHistory.push({ role: "user", content: q });
+
+    if (chatInputText) chatInputText.value = "";
+    const fullInput = document.getElementById("fullChatInputText");
+    if (fullInput) fullInput.value = "";
+
+    const submitBtns = [chatSubmitBtn, document.getElementById("fullChatSendBtn")].filter(Boolean);
+    const textInputs = [chatInputText, fullInput].filter(Boolean);
+
+    submitBtns.forEach(btn => btn.disabled = true);
+    textInputs.forEach(inp => inp.disabled = true);
+
+    const typingId = appendChatTypingIndicator();
+
+    try {
+      const scannerInstance = window.scamBreakerScanner || window.scamKillerScanner;
+      const response = await scannerInstance.sendChatMessage(chatConversationHistory);
+      document.querySelectorAll(`[id="${typingId}"]`).forEach(el => el.remove());
+
+      const reply = response && (response.reply || response.content);
+      if (reply && String(reply).trim()) {
+        appendChatMessage("ai", String(reply).trim());
+        chatConversationHistory.push({ role: "assistant", content: String(reply).trim() });
+      } else {
+        appendChatMessage("ai", "I'm sorry, I could not generate a response. Please try asking a specific question or retry in a moment.", true);
+      }
+    } catch (err) {
+      document.querySelectorAll(`[id="${typingId}"]`).forEach(el => el.remove());
+      console.error("AI chat error:", err);
+      appendChatMessage("ai", `Security Advisory Notice: ${err.message}\n\nEmergency Guidance: If you believe you are experiencing active fraud, immediately contact your bank to freeze transactions and report to cybercrime.gov.in (Helpline: 1930).`, true);
+    } finally {
+      isSubmittingChat = false;
+      submitBtns.forEach(btn => btn.disabled = false);
+      textInputs.forEach(inp => {
+        inp.disabled = false;
+        inp.focus();
+      });
+    }
+  }
+
+  if (chatForm && chatInputText) {
+    chatForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      handleChatSubmit(chatInputText.value);
+    });
+  }
+
+  function initFullAiChatView() {
+    const fullForm = document.getElementById("fullChatForm");
+    const fullInput = document.getElementById("fullChatInputText");
+    if (fullForm && fullInput && !fullForm.dataset.bound) {
+      fullForm.dataset.bound = "true";
+      fullForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        handleChatSubmit(fullInput.value);
+      });
+    }
+  }
+
+  document.querySelectorAll(".chat-chip, .full-chat-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const prompt = chip.getAttribute("data-prompt") || chip.textContent.trim();
+      handleChatSubmit(prompt);
     });
   });
 

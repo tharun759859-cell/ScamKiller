@@ -418,7 +418,7 @@ const SCAM_BREAKER_DATA = {
     }
   ],
 
-  // Authentic Regulatory & Cybersecurity Advisories (RBI, I4C, CERT-In, Sanchar Saathi)
+  // Authentic Regulatory & Cybersecurity Advisories (RBI, I4C, CERT-In, Sanchar Saathi, Interpol)
   officialAdvisories: [
     {
       id: "ADV-2026-01",
@@ -427,7 +427,21 @@ const SCAM_BREAKER_DATA = {
       sourceUrl: "https://cybercrime.gov.in",
       recency: "November 2026",
       type: "official",
+      jurisdiction: "India (National Law Enforcement)",
+      region: "South Asia",
+      mapCoordinates: { x: 68.5, y: 45.2, label: "India (National)" },
       summary: "Fraudsters pose as CBI, ED, Police, or Customs officers over Skype/WhatsApp video calls wearing forged uniforms and fake ID badges, claiming your Aadhaar or parcel is linked to illegal narcotics or money laundering.",
+      howItWorks: [
+        "1. Impersonation Call: Automated IVR or WhatsApp video call claiming a parcel or SIM is tied to drugs or illegal money transfers.",
+        "2. Coercion & Fake Studio: Caller wears police uniform against a fake police station background, showing forged Supreme Court arrest warrants.",
+        "3. Isolation: Victim is ordered to stay on continuous video surveillance ('Digital Arrest') and forbidden from contacting family.",
+        "4. Clearing Account Trap: Victim is coerced into transferring funds to an 'RBI verification account' with false promises of return after 2 hours."
+      ],
+      commonApproaches: [
+        "High-definition fake police sets with forged Supreme Court seals",
+        "Threatening immediate arrest and public humiliation",
+        "Coerced continuous video call under the guise of judicial custody"
+      ],
       warningSigns: [
         "Demands to stay on continuous video call under 'digital arrest'",
         "Display of forged arrest warrants, court orders, or Supreme Court letters",
@@ -448,12 +462,26 @@ const SCAM_BREAKER_DATA = {
       sourceUrl: "https://rbi.org.in",
       recency: "November 2026",
       type: "official",
+      jurisdiction: "India (Banking & Financial)",
+      region: "South Asia",
+      mapCoordinates: { x: 67.2, y: 47.0, label: "India (Banking Hubs)" },
       summary: "Phishing SMS claiming your bank account or debit card will be suspended within 24 hours due to non-updated PAN/KYC, prompting you to click a link or download an APK file.",
+      howItWorks: [
+        "1. Panic SMS: Message alleges account blockage or card deactivation tonight unless PAN is linked.",
+        "2. Deceptive Domain: Directs victim to a spoofed NetBanking page hosted on .top, .xyz, or .club.",
+        "3. Credential Harvesting: Form steals username, password, date of birth, and triggers an OTP interception.",
+        "4. Malicious APK: In advanced variants, prompts user to install 'Bank_KYC_Update.apk' which intercepts SMS OTPs in the background."
+      ],
+      commonApproaches: [
+        "SMS sent from personal 10-digit mobile numbers (+91-9xxxxxxxxx) mimicking banks",
+        "Fake PAN/Aadhaar re-verification web forms",
+        "Sideloaded Android APKs with READ_SMS permissions"
+      ],
       warningSigns: [
-        "SMS sent from personal 10-digit mobile numbers (+91-9xxxxxxxxx) instead of official bank header (e.g. SBIPAY, HDFCBK)",
+        "SMS sent from personal 10-digit mobile numbers instead of official bank header (e.g. SBIPAY, HDFCBK)",
         "Urgent 12-hour or 24-hour account suspension ultimatum",
         "Links pointing to unverified domains (.top, .xyz, .online, .club)",
-        "Requests to install unknown Android APK files (e.g., 'SBI_KYC_Update.apk')"
+        "Requests to install unknown Android APK files"
       ],
       safetyRecommendations: [
         "Never click links sent via SMS claiming to update KYC.",
@@ -469,12 +497,26 @@ const SCAM_BREAKER_DATA = {
       sourceUrl: "https://cybercrime.gov.in",
       recency: "November 2026",
       type: "official",
+      jurisdiction: "India (State Power Utilities)",
+      region: "South Asia",
+      mapCoordinates: { x: 69.5, y: 43.5, label: "Northern & Western India" },
       summary: "Mass SMS/WhatsApp notices warning that your electricity connection will be disconnected tonight at 9:30 PM due to unpaid previous month bills, instructing you to call a personal phone number.",
+      howItWorks: [
+        "1. Evening Disconnection Warning: Mass SMS sent at late afternoon warning of power cutoff at 9:30 PM.",
+        "2. Fake Officer Contact: SMS provides a personal phone number for the 'Executive Power Officer'.",
+        "3. Screen-Sharing Lure: Fake officer claims system needs verification and directs victim to download QuickSupport or AnyDesk to pay ₹10 token bill.",
+        "4. Screen Capture: Once remote access is active, fraudster monitors NetBanking or UPI PIN entry and drains accounts."
+      ],
+      commonApproaches: [
+        "Artificial deadline timed for evening when official utility offices are closed",
+        "Request to install remote screen-sharing tools to 'recharge ₹10'",
+        "Payment requested to a personal UPI ID rather than registered utility biller"
+      ],
       warningSigns: [
         "Specific artificial deadline ('disconnected tonight at 9:30 PM')",
         "Personal mobile number given to contact the 'Electricity Officer'",
-        "Caller directs you to install AnyDesk, TeamViewer, or quick-support app to 'recharge ₹10'",
-        "Payment requested to a personal UPI ID rather than the official electricity board biller"
+        "Caller directs you to install AnyDesk, TeamViewer, or QuickSupport app",
+        "Payment requested to a personal UPI ID rather than official utility biller"
       ],
       safetyRecommendations: [
         "Discoms never disconnect power without prior written official notices and registered biller alerts.",
@@ -490,7 +532,21 @@ const SCAM_BREAKER_DATA = {
       sourceUrl: "https://indiapost.gov.in",
       recency: "November 2026",
       type: "official",
+      jurisdiction: "India / International Transit",
+      region: "Global Transit",
+      mapCoordinates: { x: 52.0, y: 35.0, label: "Cross-Border Transit" },
       summary: "Fake SMS masquerading as India Post, FedEx, or DHL alleging an undelivered parcel due to incomplete address details, demanding a small ₹5 to ₹50 token fee to reschedule delivery.",
+      howItWorks: [
+        "1. Delivery Failure Alert: Smishing SMS claims postal parcel could not be delivered due to missing house number.",
+        "2. Deceptive URL: Link leads to spoofed postal tracking portal with cloned logos.",
+        "3. Address + Card Form: Form requests address update followed by a nominal redelivery micro-fee.",
+        "4. Card Details Harvesting: Steals credit/debit card number, CVV, expiry, and intercepts dynamic transaction OTP."
+      ],
+      commonApproaches: [
+        "Low micro-fee hurdle (₹25–₹50) to lower victim vigilance",
+        "Shortened URL or lookalike domain (e.g., indiapost-redeliver.top)",
+        "Fake parcel tracking timeline showing package stuck at regional sorting hub"
+      ],
       warningSigns: [
         "SMS contains short or deceptive link (e.g., indiapost-track.top/pay)",
         "Token redelivery fee requested via credit/debit card on an insecure web form",
@@ -509,10 +565,24 @@ const SCAM_BREAKER_DATA = {
       sourceUrl: "https://cybercrime.gov.in",
       recency: "November 2026",
       type: "official",
+      jurisdiction: "Cross-Border / Southeast Asia VoIP Hubs",
+      region: "Southeast Asia",
+      mapCoordinates: { x: 78.0, y: 52.0, label: "Cross-Border Call Hubs" },
       summary: "Unsolicited WhatsApp/Telegram offers promising ₹2,000–₹5,000 daily for liking YouTube videos or writing Google hotel reviews. Victims receive initial small payouts before being trapped into depositing large sums for 'VIP tasks'.",
+      howItWorks: [
+        "1. Cold Outreach: Recruiter contacts victim via WhatsApp from +62, +84, +234, or +1 claiming flexible part-time work.",
+        "2. Bait Tasks: Victim completes 3 simple tasks (e.g. YouTube likes) and receives ₹300–₹500 in UPI to build trust.",
+        "3. Telegram Group Escalation: Victim is migrated to a Telegram group filled with accomplices pretending to earn lakhs.",
+        "4. Deposit Trap: Victim must deposit ₹5,000 to unlock 'prepaid merchant tasks', then ₹50,000 to 'withdraw frozen profits', losing everything."
+      ],
+      commonApproaches: [
+        "Unsolicited job offer from international numbers on WhatsApp or Telegram",
+        "Legitimate initial small payout sent to deceive victim into believing it is genuine",
+        "High-pressure investment tiers with fabricated account balance dashboards"
+      ],
       warningSigns: [
-        "Unsolicited job offer from international numbers (+62, +84, +234, +1) on WhatsApp or Telegram",
-        "Initial small payout (₹150–₹500) sent to gain victim trust",
+        "Unsolicited job offer from international numbers on WhatsApp or Telegram",
+        "Initial small payout sent to gain victim trust",
         "Victim added to a Telegram 'task group' with fake members posting screenshots of huge earnings",
         "Demand to deposit personal money for 'prepaid crypto trading' or 'VIP merchant rating tasks'"
       ],
@@ -521,8 +591,172 @@ const SCAM_BREAKER_DATA = {
         "Stop interacting immediately if asked to deposit funds to withdraw earnings.",
         "Report fraudulent Telegram handles and bank account numbers to 1930 and cybercrime.gov.in."
       ]
+    },
+    {
+      id: "ADV-2026-06",
+      category: "Cross-Border Pig Butchering & Crypto Investment Fraud",
+      source: "Interpol Purple Notice / Global Anti-Scam Alliance (GASA)",
+      sourceUrl: "https://www.interpol.int",
+      recency: "November 2026",
+      type: "official",
+      jurisdiction: "International Crime Syndicates",
+      region: "Global",
+      mapCoordinates: { x: 80.5, y: 48.0, label: "International Syndicate Networks" },
+      summary: "Syndicate romance and high-yield investment scams where scammers build trust over weeks before introducing manipulated cryptocurrency trading platforms with fabricated profit charts.",
+      howItWorks: [
+        "1. Wrong Number / Social Encounter: Scammer reaches out on LinkedIn, dating apps, or WhatsApp pretending to be a wealthy investor.",
+        "2. Long Grooming Period: Scammer shares daily life, wins trust, and gradually mentions insider crypto trading algorithms.",
+        "3. Manipulated Exchange: Directs victim to a cloned web platform showing fabricated 200% returns.",
+        "4. Exit Scam: When victim attempts withdrawal, platform demands 30% advance tax fee, locking all capital."
+      ],
+      commonApproaches: [
+        "Weeks of polite, affluent persona building without early financial requests",
+        "Proprietary fake MT5 or web trading portals with backend-manipulated candlestick graphs",
+        "Extortionate 'liquidity fees' or 'tax clearance' demanded to release funds"
+      ],
+      warningSigns: [
+        "Online acquaintance enthusiastically recommends an unlisted cryptocurrency platform",
+        "Guaranteed 10%–30% daily returns with zero market downside",
+        "Demands for upfront 'tax payments' or 'margin deposit' to process withdrawals"
+      ],
+      safetyRecommendations: [
+        "Never invest money in unregulated third-party exchanges recommended by online contacts.",
+        "Legitimate exchanges never require users to deposit additional capital to withdraw their own funds.",
+        "Report cross-border fraud accounts to your bank and file an international IC3/Interpol notice."
+      ]
     }
-  ]
+  ],
+
+  // Comprehensive Scam Recovery Database (Institutions, Helplines, and Action Trees)
+  recoveryGuidance: {
+    bankHelplines: [
+      { name: "State Bank of India (SBI)", phone: "1800 11 2211", altPhone: "1800 425 3800", smsBlock: "BLOCK <Account Number> to 567676", portal: "https://onlinesbi.sbi" },
+      { name: "HDFC Bank", phone: "1800 202 6161", altPhone: "1800 258 3838", smsBlock: "Call 1800 258 3838 immediately", portal: "https://netbanking.hdfcbank.com" },
+      { name: "ICICI Bank", phone: "1800 1080", altPhone: "1800 200 3344", smsBlock: "SMS BLOCK to 9215676766", portal: "https://infinity.icicibank.com" },
+      { name: "Axis Bank", phone: "1800 419 5577", altPhone: "1800 103 5577", smsBlock: "SMS BLOCK to 5676782", portal: "https://axisbank.com" },
+      { name: "Punjab National Bank (PNB)", phone: "1800 180 2222", altPhone: "1800 103 2222", smsBlock: "SMS HOTCARD <Card Number> to 5607040", portal: "https://netpnb.com" },
+      { name: "Bank of Baroda", phone: "1800 570 0", altPhone: "1800 258 4455", smsBlock: "Call 1800 570 0 to freeze NetBanking", portal: "https://bobibanking.com" }
+    ],
+    officialAuthorities: [
+      { name: "National Cyber Crime Helpline", contact: "1930", url: "https://cybercrime.gov.in", note: "Citizen Financial Cyber Fraud Reporting System — Immediate fund freezing mechanism." },
+      { name: "DoT Chakshu (Sanchar Saathi)", contact: "Online Portal", url: "https://sancharsaathi.gov.in/sfc/", note: "Official platform for reporting fraudulent mobile numbers, SMS, and WhatsApp callers." },
+      { name: "National Consumer Helpline", contact: "1915", url: "https://consumerhelpline.gov.in", note: "E-commerce and false advertising dispute resolution." }
+    ],
+    situationPlaybooks: {
+      money_sent: {
+        title: "Money Sent / Financial Loss",
+        subtitle: "Unauthorized or coerced transfer via UPI, NetBanking, IMPS, or Card",
+        urgency: "CRITICAL — Golden Hour Protocol",
+        goldenHourNotice: "Transactions reported within 2 hours have a significantly higher probability of being frozen in destination beneficiary accounts by law enforcement and partner banks.",
+        priorityActions: [
+          "Call National Cybercrime Helpline 1930 immediately to register the transaction UTR number and beneficiary account.",
+          "Call your bank's dedicated fraud emergency desk (printed on debit card or listed below) to freeze your NetBanking and debit card.",
+          "File an official police acknowledgment on cybercrime.gov.in and save the acknowledgment token.",
+          "Preserve all transaction receipts, SMS alerts, UPI transaction IDs, and chat screenshots as evidence."
+        ],
+        whatToAvoid: [
+          "NEVER pay 'refund clearance fees' or hire 'crypto recovery agents' online. They are secondary scammers.",
+          "Do not delete chat logs or SMS threads with the scammer — they are criminal evidence."
+        ]
+      },
+      credentials_shared: {
+        title: "OTP, PIN or Password Disclosed",
+        subtitle: "Shared authentication credentials with an unsolicited caller or website",
+        urgency: "HIGH EMERGENCY",
+        goldenHourNotice: "Attackers with credentials can initiate unauthorized transactions at any moment. Act before transactions occur.",
+        priorityActions: [
+          "Immediately log into your official NetBanking portal and change your login password and transaction passwords.",
+          "If locked out, immediately call your bank's toll-free helpline to freeze NetBanking and hotlist your cards.",
+          "For UPI compromise, open your UPI app and reset your UPI PIN using your ATM debit card details.",
+          "Enable two-factor authentication (2FA) with an authenticator app (Google/Microsoft Authenticator) instead of SMS."
+        ],
+        whatToAvoid: [
+          "Never read new OTPs aloud to any caller claiming to 'reverse the compromised transaction'.",
+          "Do not use the same password across multiple financial or email accounts."
+        ]
+      },
+      app_installed: {
+        title: "Suspicious App or APK Installed",
+        subtitle: "Installed an unknown APK file or remote desktop tool (AnyDesk, QuickSupport, TeamViewer)",
+        urgency: "IMMEDIATE DEVICE THREAT",
+        goldenHourNotice: "Malicious APKs and remote tools can intercept OTPs in real time and capture banking screens.",
+        priorityActions: [
+          "Immediately turn on AIRPLANE MODE and disconnect from Wi-Fi to stop remote command transmission.",
+          "Boot your phone in Safe Mode (or power off) and uninstall the suspicious application or APK.",
+          "Navigate to Settings → Security → Device Admin Apps and revoke permissions for any unknown managers.",
+          "Using a different clean device, change your primary email and banking passwords.",
+          "If the app had root or deep administrative privileges, perform a full Factory Reset."
+        ],
+        whatToAvoid: [
+          "Do not open banking apps while the infected device is connected to the internet.",
+          "Never approve unknown accessibility service prompts or screen-recording permissions."
+        ]
+      },
+      account_compromised: {
+        title: "Account Access Compromised",
+        subtitle: "WhatsApp, Google, social media, or email account hijacked or locked out",
+        urgency: "HIGH URGENCY",
+        goldenHourNotice: "Hijacked accounts are rapidly leveraged to solicit emergency funds from your family and contacts.",
+        priorityActions: [
+          "Immediately alert your family, friends, and colleagues via phone or SMS not to send money to anyone claiming to be you.",
+          "Initiate account recovery via the official platform's account recovery flow (e.g. WhatsApp verification code, Google Account Recovery).",
+          "Revoke all active device sessions: Settings → Linked Devices → Log out from all sessions.",
+          "If your mobile network disconnected unexpectedly, visit your telecom provider branch immediately to check for an unauthorized SIM Swap."
+        ],
+        whatToAvoid: [
+          "Do not pay ransoms demanded by hijackers. They rarely restore access upon payment.",
+          "Never share verification PINs sent to your phone during recovery."
+        ]
+      },
+      link_clicked: {
+        title: "Suspicious Link Clicked / Spoofed Site Visited",
+        subtitle: "Opened a phishing URL or potential malware download link",
+        urgency: "MODERATE CAUTION",
+        goldenHourNotice: "If you did not enter credentials or download files, device risk is low. Follow precautionary containment.",
+        priorityActions: [
+          "Close the browser tab immediately and clear your browser's cookies and cached site data.",
+          "Check your Downloads folder and immediately delete any downloaded .apk, .exe, or .zip files without opening them.",
+          "Run a scan using your device's built-in security scanner (Google Play Protect on Android, Apple Security on iOS).",
+          "If you entered your password on the page, change that password immediately on the genuine official website."
+        ],
+        whatToAvoid: [
+          "Do not click 'Allow' on notification popups or permission prompts from unknown websites.",
+          "Do not enter test credentials or personal details to 'see what happens'."
+        ]
+      },
+      personal_info_shared: {
+        title: "Personal Information Disclosed",
+        subtitle: "Shared Aadhaar, PAN card, address, or ID documents with a fraudster",
+        urgency: "MODERATE — IDENTITY VIGILANCE",
+        goldenHourNotice: "Identity theft occurs over weeks or months. Implement preventative credit and biometric locks.",
+        priorityActions: [
+          "Lock your Aadhaar biometrics using the official UIDAI portal (m-Aadhaar app or resident.uidai.gov.in).",
+          "Check Sanchar Saathi TAFCOP (sancharsaathi.gov.in) to verify all mobile numbers issued under your Aadhaar.",
+          "Monitor your monthly bank account statements and CIBIL/Experian credit reports for unauthorized loan applications.",
+          "File an information report on cybercrime.gov.in stating that your ID documents were fraudulently collected."
+        ],
+        whatToAvoid: [
+          "Do not share color photocopies of national IDs without crossing out purpose and adding self-attested watermarks."
+        ]
+      },
+      other_threat: {
+        title: "Other Scam Incident / Coercion Threat",
+        subtitle: "Extortion, blackmail, deepfake calls, lottery claims, or unexpected threats",
+        urgency: "URGENT SAFETY PROTOCOL",
+        goldenHourNotice: "Scammers rely on psychological shock and isolation. Break the isolation immediately.",
+        priorityActions: [
+          "Disconnect the call and block the sender. Cease all communication immediately.",
+          "Speak to a trusted family member, legal advisor, or senior police officer. Do not keep it a secret.",
+          "Report the caller's phone number on the DoT Chakshu portal (sancharsaathi.gov.in).",
+          "If threatened with physical harm or immediate arrest, dial 112 (National Emergency) or 1930."
+        ],
+        whatToAvoid: [
+          "NEVER transfer money under threat. Scammers will only demand larger sums once a payment is made.",
+          "Do not engage in arguments or emotional exchanges with the extortionist."
+        ]
+      }
+    }
+  }
 };
 
 // Export to window for vanilla JS access with backwards-compatible alias
