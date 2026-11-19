@@ -409,6 +409,8 @@
               <span class="text-[11px] text-amber-700" id="inlineCommunityMatchDesc"></span>
             </div>
             <span id="inlineCommunityMatchUpvotes" class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-mono shrink-0"></span>
+          </div>
+
           <!-- Extracted Content & OCR Text Viewer (NEW) -->
           <div id="inlineExtractedContentContainer" class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -691,208 +693,39 @@
             <div>
               <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <span class="material-symbols-outlined text-rose-600">radar</span>
-                Scam Radar &amp; Global Threat Intelligence
+                Scam Radar &amp; Cybersecurity Intelligence
               </h2>
-              <p class="text-xs text-slate-500">Live jurisdictional alerts, international fraud hotspots, and telemetry trends.</p>
-            </div>
-            
-            <!-- Dual-mode Navigation Tabs -->
-            <div class="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200 self-start sm:self-auto">
-              <button id="radarTabOfficial" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-white text-emerald-800 shadow-sm border border-slate-200/80 flex items-center gap-1.5 active">
-                <span class="material-symbols-outlined text-sm text-emerald-600">public</span>
-                <span>Jurisdiction Map &amp; Advisories</span>
-              </button>
-              <button id="radarTabCommunity" class="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-sm text-slate-500">trending_up</span>
-                <span>Community Velocity Radar</span>
-              </button>
+              <p class="text-xs text-slate-500">Live threat velocity, pattern clusters, and incident telemetry from your local database.</p>
             </div>
           </div>
 
-          <!-- TAB 1: JURISDICTION MAP & REGULATORY ADVISORIES -->
-          <div id="radarOfficialContent" class="space-y-6">
-            <!-- World Map Intelligence Visualizer -->
-            <div class="radar-map-container p-4 sm:p-6 text-white relative">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-                <div class="flex items-center gap-2">
-                  <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span class="text-xs font-mono font-bold tracking-wider uppercase text-emerald-300">Jurisdictional Threat Map (Interpol &amp; Regulatory Hubs)</span>
-                </div>
-                <div class="text-[11px] font-mono text-emerald-200/80 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-500/30 flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-xs text-emerald-400">touch_app</span>
-                  <span>Click any pulsating pin to view tactical briefing</span>
-                </div>
-              </div>
+          <!-- Radar Notice -->
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-slate-500 text-base shrink-0">info</span>
+            <span>Telemetry Notice: Statistical surge modeling requires minimum 50 confirmed incidents. Displaying verified incident counts without fabricated percentages.</span>
+          </div>
 
-              <!-- Interactive Responsive SVG World Map -->
-              <div class="relative w-full aspect-[2/1] max-h-[360px] bg-[#05170f] rounded-xl overflow-hidden border border-emerald-500/20 shadow-inner flex items-center justify-center">
-                <svg viewBox="0 0 1000 500" class="w-full h-full select-none" preserveAspectRatio="xMidYMid meet">
-                  <defs>
-                    <radialGradient id="mapGlow" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stop-color="#10b981" stop-opacity="0.15" />
-                      <stop offset="100%" stop-color="#05170f" stop-opacity="0" />
-                    </radialGradient>
-                    <!-- Pulse Keyframe for hotspot rings -->
-                    <filter id="glowFilter">
-                      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                      <feMerge>
-                        <feMergeNode in="coloredBlur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                      </feMerge>
-                    </filter>
-                  </defs>
+          <!-- Radar Cards Grid -->
+          <div id="radarCardsGridTrends" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+            <!-- Dynamically populated from /api/radar/trends -->
+          </div>
 
-                  <!-- Map Background & Coordinate Grid -->
-                  <rect width="1000" height="500" fill="#04120c" />
-                  <circle cx="500" cy="250" r="450" fill="url(#mapGlow)" />
-                  
-                  <!-- Longitude / Latitude subtle gridlines -->
-                  <g stroke="#0e3825" stroke-width="0.75" stroke-dasharray="4 4">
-                    <line x1="100" y1="0" x2="100" y2="500" />
-                    <line x1="250" y1="0" x2="250" y2="500" />
-                    <line x1="400" y1="0" x2="400" y2="500" />
-                    <line x1="550" y1="0" x2="550" y2="500" />
-                    <line x1="700" y1="0" x2="700" y2="500" />
-                    <line x1="850" y1="0" x2="850" y2="500" />
-                    <line x1="0" y1="125" x2="1000" y2="125" />
-                    <line x1="0" y1="250" x2="1000" y2="250" stroke="#134e35" stroke-width="1" />
-                    <line x1="0" y1="375" x2="1000" y2="375" />
-                  </g>
-
-                  <!-- Simplified Continental Landmasses (Geometric Geopolitical Outlines) -->
-                  <g fill="#0b2b1d" stroke="#175239" stroke-width="1.2" opacity="0.95">
-                    <!-- North America -->
-                    <path d="M 120 70 L 260 70 L 310 140 L 290 190 L 250 200 L 230 250 L 210 240 L 190 270 L 170 240 L 140 180 L 100 130 Z" />
-                    <!-- South America -->
-                    <path d="M 270 260 L 340 280 L 370 330 L 350 420 L 310 460 L 280 410 L 260 330 Z" />
-                    <!-- Europe -->
-                    <path d="M 460 80 L 580 80 L 570 140 L 520 180 L 460 170 L 440 130 Z" />
-                    <!-- Africa -->
-                    <path d="M 470 190 L 570 180 L 610 250 L 590 380 L 530 420 L 470 330 L 450 240 Z" />
-                    <!-- Asia -->
-                    <path d="M 590 70 L 870 70 L 890 180 L 840 250 L 780 290 L 730 250 L 685 240 L 620 220 L 580 140 Z" />
-                    <!-- Australia & Oceania -->
-                    <path d="M 780 340 L 890 330 L 920 400 L 860 450 L 790 420 Z" />
-                  </g>
-
-                  <!-- INTERACTIVE THREAT HOTSPOT PINS -->
-                  <!-- Pin 1: India National (Digital Arrest / CBI Impersonation) -->
-                  <g class="radar-hotspot-pin" data-advisory-id="ADV-2026-01" transform="translate(685, 226)">
-                    <circle r="16" fill="#f43f5e" opacity="0.25" class="animate-ping" />
-                    <circle r="8" fill="#f43f5e" stroke="#fff" stroke-width="2" filter="url(#glowFilter)" />
-                    <text x="12" y="4" font-size="11" font-weight="bold" fill="#fecdd3" font-family="sans-serif">India (I4C Alert)</text>
-                  </g>
-
-                  <!-- Pin 2: India Banking Hubs (PAN/KYC Suspension SMS) -->
-                  <g class="radar-hotspot-pin" data-advisory-id="ADV-2026-02" transform="translate(672, 245)">
-                    <circle r="14" fill="#fbbf24" opacity="0.3" class="animate-ping" />
-                    <circle r="7" fill="#f59e0b" stroke="#fff" stroke-width="2" />
-                    <text x="11" y="4" font-size="10" font-weight="600" fill="#fef3c7" font-family="sans-serif">Banking Phishing</text>
-                  </g>
-
-                  <!-- Pin 3: Northern / State Utilities (Electricity Power Cutoff) -->
-                  <g class="radar-hotspot-pin" data-advisory-id="ADV-2026-03" transform="translate(695, 210)">
-                    <circle r="12" fill="#38bdf8" opacity="0.3" class="animate-ping" />
-                    <circle r="6" fill="#0284c7" stroke="#fff" stroke-width="1.5" />
-                    <text x="10" y="4" font-size="10" font-weight="600" fill="#bae6fd" font-family="sans-serif">Power Cut Lures</text>
-                  </g>
-
-                  <!-- Pin 4: Cross-Border Transit / Postal Redirection (Global Smishing) -->
-                  <g class="radar-hotspot-pin" data-advisory-id="ADV-2026-04" transform="translate(520, 175)">
-                    <circle r="14" fill="#e11d48" opacity="0.3" class="animate-ping" />
-                    <circle r="7" fill="#be123c" stroke="#fff" stroke-width="2" />
-                    <text x="11" y="4" font-size="10" font-weight="600" fill="#fecdd3" font-family="sans-serif">Transit Postal Smishing</text>
-                  </g>
-
-                  <!-- Pin 5: Southeast Asia Cross-Border VoIP & Task Hubs -->
-                  <g class="radar-hotspot-pin" data-advisory-id="ADV-2026-05" transform="translate(780, 260)">
-                    <circle r="16" fill="#f43f5e" opacity="0.3" class="animate-ping" />
-                    <circle r="8" fill="#e11d48" stroke="#fff" stroke-width="2" filter="url(#glowFilter)" />
-                    <text x="12" y="4" font-size="10" font-weight="bold" fill="#fecdd3" font-family="sans-serif">SE Asia VoIP / Task Hubs</text>
-                  </g>
-
-                  <!-- Pin 6: International Crypto Syndicates -->
-                  <g class="radar-hotspot-pin" data-advisory-id="ADV-2026-06" transform="translate(815, 235)">
-                    <circle r="12" fill="#a855f7" opacity="0.3" class="animate-ping" />
-                    <circle r="6" fill="#7e22ce" stroke="#fff" stroke-width="1.5" />
-                    <text x="10" y="4" font-size="10" font-weight="600" fill="#f3e8ff" font-family="sans-serif">Crypto Syndicates</text>
-                  </g>
-                </svg>
-              </div>
-
-              <!-- Hotspot Dynamic Intelligence Briefing Card -->
-              <div id="radarHotspotDetailCard" class="mt-4 p-4 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-slate-100 space-y-3 transition-all">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-500/30 pb-2">
-                  <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-rose-400">warning</span>
-                    <h4 id="radarBriefingTitle" class="font-bold text-sm text-white">Select a hotspot pin on the map to inspect intelligence</h4>
-                  </div>
-                  <span id="radarBriefingJurisdiction" class="text-[11px] font-mono text-emerald-300 bg-emerald-900/60 px-2 py-0.5 rounded border border-emerald-500/30 self-start sm:self-auto">National &amp; Global Coverage</span>
-                </div>
-                <p id="radarBriefingSummary" class="text-xs text-emerald-100/90 leading-relaxed">
-                  The Scam Radar compiles verified regulatory cautions from Indian cyber law enforcement (MHA/I4C, RBI, CERT-In, Sanchar Saathi) and international advisories (Interpol). Click any active pin to see step-by-step tactics, warning indicators, and official response steps.
-                </p>
-                <div id="radarBriefingTactics" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs pt-1 hidden">
-                  <div class="p-2.5 rounded-lg bg-black/30 border border-emerald-500/20">
-                    <span class="font-bold text-rose-300 block mb-1">Execution Tactic:</span>
-                    <ul id="radarBriefingSteps" class="list-disc list-inside space-y-1 text-slate-300 text-[11px]"></ul>
-                  </div>
-                  <div class="p-2.5 rounded-lg bg-black/30 border border-emerald-500/20">
-                    <span class="font-bold text-emerald-300 block mb-1">Defense Protocol:</span>
-                    <ul id="radarBriefingDefense" class="list-disc list-inside space-y-1 text-slate-300 text-[11px]"></ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Verified Regulatory & Cybersecurity Advisories Grid -->
-            <div class="space-y-3 pt-2">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-900 font-mono flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-emerald-600 text-sm">verified</span>
-                    <span>Verified Regulatory &amp; Cybersecurity Advisories</span>
-                  </h3>
-                  <p class="text-[11px] text-slate-500">Official warnings from RBI, CERT-In, I4C, and Sanchar Saathi.</p>
-                </div>
-                <span class="text-[10px] font-mono text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">Official Authorities</span>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="officialAdvisoriesGrid">
-                <!-- Dynamically populated from SCAM_BREAKER_DATA.officialAdvisories -->
-              </div>
+          <!-- Popular Scam Categories Breakdown -->
+          <div class="space-y-3 pt-2">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-700 font-mono">Popular Threat Categories in SQLite Database</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="popularCategoriesGrid">
+              <!-- Dynamically populated -->
             </div>
           </div>
 
-          <!-- TAB 2: COMMUNITY VELOCITY RADAR (TELEMETRY) -->
-          <div id="radarCommunityContent" class="space-y-6" style="display: none;">
-            <!-- Radar Notice -->
-            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center gap-2.5">
-              <span class="material-symbols-outlined text-slate-500 text-base shrink-0">info</span>
-              <span>Telemetry Notice: Statistical surge modeling requires minimum 50 confirmed incidents. Displaying verified incident counts without fabricated percentages.</span>
+          <!-- Structured Community Pattern Clusters -->
+          <div class="space-y-3 pt-4 border-t border-slate-200">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-700 font-mono">Clustered Threat Patterns &amp; Velocity (Fingerprint Aggregated)</h3>
+              <span class="text-[10px] font-mono text-slate-400">Zero-Log Sanitized Clustering</span>
             </div>
-
-            <!-- Radar Cards Grid -->
-            <div id="radarCardsGridTrends" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-              <!-- Dynamically populated from /api/radar/trends -->
-            </div>
-
-            <!-- Popular Scam Categories Breakdown -->
-            <div class="space-y-3 pt-2">
-              <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-700 font-mono">Popular Threat Categories in SQLite Database</h3>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="popularCategoriesGrid">
-                <!-- Dynamically populated -->
-              </div>
-            </div>
-
-            <!-- Structured Community Pattern Clusters -->
-            <div class="space-y-3 pt-4 border-t border-slate-200">
-              <div class="flex items-center justify-between">
-                <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-700 font-mono">Clustered Threat Patterns &amp; Velocity (Fingerprint Aggregated)</h3>
-                <span class="text-[10px] font-mono text-slate-400">Zero-Log Sanitized Clustering</span>
-              </div>
-              <div id="communityPatternsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <!-- Dynamically populated from /api/community/patterns -->
-              </div>
+            <div id="communityPatternsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <!-- Dynamically populated from /api/community/patterns -->
             </div>
           </div>
         </div>

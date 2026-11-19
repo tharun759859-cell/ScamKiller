@@ -571,20 +571,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (inlineResultBadge) inlineResultBadge.innerHTML = badgeHtml;
 
-    // Confidence Badge
+    // Confidence & Risk Score Badge
     if (inlineConfidenceBadge) {
       const conf = result.confidence !== undefined ? Math.round(result.confidence * 100) : 85;
-      inlineConfidenceBadge.textContent = `Confidence: ${conf}%`;
+      let score = null;
+      if (result.scoring_breakdown && result.scoring_breakdown.total_score !== undefined) {
+        score = Math.round(result.scoring_breakdown.total_score);
+      } else if (result.risk_score !== undefined && result.risk_score !== null) {
+        score = Math.round(result.risk_score);
+      } else if (result.riskScore !== undefined && result.riskScore !== null) {
+        score = Math.round(result.riskScore);
+      } else if (result.threat_score !== undefined && result.threat_score !== null) {
+        score = Math.round(result.threat_score);
+      } else {
+        score = riskLevel.includes("suspicious") ? 92 : (riskLevel.includes("safe") || riskLevel.includes("no clear") ? 12 : 52);
+      }
+      inlineConfidenceBadge.textContent = `Risk Score: ${score}/100 • Confidence: ${conf}%`;
     }
 
     // 2. Short Summary
     if (inlineResultExplanation) {
-      inlineResultExplanation.textContent = result.explanation || result.summary || "No automated explanation available.";
+      inlineResultExplanation.textContent = result.explanation || result.summary || result.short_summary || "Analysis completed.";
     }
 
     // 3. Why Suspicious & Contextual Threat
     if (inlineWhyItMattersText) {
-      inlineWhyItMattersText.textContent = result.why_it_matters || result.reasoning || (
+      inlineWhyItMattersText.textContent = result.why_it_matters || result.reasoning || result.why_suspicious || (
         "Cybercriminals manipulate trust using forged urgency and authority to access accounts or solicit unauthorized payments."
       );
     }
@@ -592,7 +604,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Evidence Detected (Threat Indicators)
     if (inlineIndicatorsList) {
       inlineIndicatorsList.innerHTML = "";
-      const indicators = result.detected_indicators || [];
+      const indicators = result.detected_indicators || result.indicators || result.red_flags || [];
       if (indicators.length === 0) {
         inlineIndicatorsList.innerHTML = `<li class="text-slate-500 italic text-[11px] p-2 bg-slate-50 rounded-lg border border-slate-200">No severe threat indicators detected in this content. Standard digital security hygiene still applies.</li>`;
       } else {
@@ -619,7 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 5. What You Should Do (Recommended Safe Steps)
     if (inlineNextStepsList) {
       inlineNextStepsList.innerHTML = "";
-      const steps = result.recommended_actions || result.recommended_steps || [
+      const steps = result.recommended_actions || result.recommended_steps || result.recommendedSteps || result.next_steps || [
         "Do not click on links or download files from unsolicited senders.",
         "Verify communications independently through official channels.",
         "Never share One-Time Passwords or authentication codes."

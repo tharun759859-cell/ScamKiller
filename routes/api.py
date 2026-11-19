@@ -369,6 +369,7 @@ def transcribe_audio():
 
 
 @api_bp.route("/report/pdf", methods=["GET", "POST"])
+@api_bp.route("/report/generate", methods=["GET", "POST"])
 def download_pdf_report():
     """
     Generates and returns an authentic, downloadable PDF threat intelligence report.
@@ -384,12 +385,19 @@ def download_pdf_report():
         }), 200
 
     if not request.is_json:
-        return jsonify({"error": "Request body must be valid JSON format."}), 400
+        return jsonify({"error": "Request body must be valid JSON format.", "code": "INVALID_JSON"}), 400
 
     data = request.get_json(silent=True) or {}
     try:
-        # Re-use and merge existing scan result from SQLite if scan_id/scanId is provided
-        sid = data.get("scan_id") or data.get("scanId")
+        # Check if scan_id or scanId or id was supplied
+        sid = data.get("scan_id") or data.get("scanId") or data.get("id")
+        has_direct_content = bool(
+            data.get("explanation") or data.get("summary") or
+            data.get("detected_indicators") or data.get("indicators") or
+            data.get("submitted_item") or data.get("display_item") or
+            data.get("target") or data.get("extracted_text") or data.get("ocr_text")
+        )
+
         if sid:
             from services.history_service import HistoryService
             existing = HistoryService.get_scan_by_id(str(sid))
@@ -397,28 +405,116 @@ def download_pdf_report():
                 merged = dict(existing)
                 if isinstance(existing.get("fullReport"), dict):
                     merged.update(existing["fullReport"])
+                elif isinstance(existing.get("full_report_json"), dict):
+                    merged.update(existing["full_report_json"])
                 elif isinstance(existing.get("structured_data"), dict):
                     merged.update(existing["structured_data"])
-                merged.update(data)
-                data = merged
 
-        # Normalize key aliases between frontend and backend
+                # Overlay user-provided data, preserving existing non-empty values
+                for k, v in data.items():
+                    if v is not None and v != "":
+                        merged[k] = v
+                data = merged
+            elif not has_direct_content:
+                return jsonify({
+                    "error": f"Scan report '{sid}' not found in audit history.",
+                    "code": "REPORT_NOT_FOUND"
+                }), 404
+        elif not has_direct_content and not data.get("risk_level") and not data.get("riskLevel"):
+            return jsonify({
+                "error": "No scan assessment data or valid scan ID provided.",
+                "code": "MISSING_REPORT_DATA"
+            }), 400
+
+        # Normalize key aliases between frontend, SQLite models, and ReportLab generator
         if not data.get("scan_id") and sid:
             data["scan_id"] = sid
+
         if not data.get("risk_level"):
-            data["risk_level"] = data.get("riskLevel") or data.get("risk_category") or data.get("riskCategory") or "caution"
+            data["risk_level"] = (
+                data.get("riskLevel") or
+                data.get("risk_category") or
+                data.get("riskCategory") or
+                data.get("risk") or
+                data.get("classification") or
+                "caution"
+            )
+
+        if not data.get("risk_score"):
+            score = (
+                data.get("riskScore") or
+                data.get("threat_score") or
+                data.get("threatScore")
+            )
+            if score is None and isinstance(data.get("scoring_breakdown"), dict):
+                score = data["scoring_breakdown"].get("total_score")
+            if score is not None:
+                data["risk_score"] = score
+
+        if not data.get("explanation"):
+            data["explanation"] = (
+                data.get("summary") or
+                data.get("short_summary") or
+                data.get("shortSummary") or
+                data.get("ai_summary") or
+                data.get("reasoning")
+            )
+
+        if not data.get("why_it_matters"):
+            data["why_it_matters"] = (
+                data.get("whyItMatters") or
+                data.get("why_suspicious") or
+                data.get("threat_breakdown") or
+                data.get("reasoning")
+            )
+
         if not data.get("submitted_item"):
-            data["submitted_item"] = data.get("displayItem") or data.get("display_item") or data.get("input_snippet")
+            data["submitted_item"] = (
+                data.get("displayItem") or
+                data.get("display_item") or
+                data.get("target") or
+                data.get("input_snippet") or
+                data.get("input")
+            )
+
+        if not data.get("detected_indicators"):
+            data["detected_indicators"] = (
+                data.get("indicators") or
+                data.get("red_flags") or
+                data.get("redFlags") or
+                data.get("detailed_indicators") or
+                []
+            )
+
         if not data.get("recommended_actions"):
-            data["recommended_actions"] = data.get("recommended_steps") or data.get("recommendedSteps")
+            data["recommended_actions"] = (
+                data.get("recommended_steps") or
+                data.get("recommendedSteps") or
+                data.get("next_steps") or
+                data.get("action_plan") or
+                []
+            )
+
         if not data.get("extracted_text"):
-            extracted = data.get("ocr_text")
+            extracted = data.get("ocr_text") or data.get("ocrText")
             if not extracted and isinstance(data.get("layers"), dict):
                 screen_layer = data["layers"].get("screenshot")
                 if isinstance(screen_layer, dict):
                     extracted = screen_layer.get("extracted_text")
             if extracted:
                 data["extracted_text"] = extracted
+
+        if not data.get("scam_category") and not data.get("category"):
+            data["category"] = data.get("threat_category") or data.get("scam_type") or "General Threat"
+
+        if not data.get("impersonated_entity"):
+            data["impersonated_entity"] = data.get("impersonatedEntity") or "None / Unspecified"
+
+        if not data.get("verification_advice"):
+            data["verification_advice"] = data.get("verificationAdvice") or data.get("safety_guidance")
+
+        if not data.get("important_uncertainties"):
+            data["important_uncertainties"] = data.get("limitations")
 
         pdf_bytes = ReportService.generate_pdf_report(data)
         scan_id = data.get("scan_id") or sid or "scam_breaker_report"

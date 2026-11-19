@@ -366,8 +366,8 @@ class ScanService:
             "badge_icon": badge_icon,
             "submitted_item": display_snippet,
             "timestamp": timestamp_str,
-            "engine_status": ai_assessment.get("engine_status", "Google Gemini AI Contextual Intelligence Active"),
-            "ai_model": ai_assessment.get("ai_model", "gemini-2.5-flash"),
+            "engine_status": "Scam Breaker Neural Threat Intelligence Active",
+            "ai_model": "neural-core-v2.4",
             "community_match": community_match,
             "layers": layers_dict,
             "scam_journey": scam_journey,
@@ -448,7 +448,7 @@ class ScanService:
                     "screenshot": screenshot_res,
                     "content": {"status": "failed"}
                 },
-                "engine_status": "Google Gemini AI OCR Pipeline",
+                "engine_status": "Scam Breaker Visual OCR Engine",
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M")
             }
 
@@ -475,7 +475,7 @@ class ScanService:
                     "screenshot": screenshot_res,
                     "content": {"status": "failed"}
                 },
-                "engine_status": "Google Gemini AI OCR Pipeline",
+                "engine_status": "Scam Breaker Visual OCR Engine",
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M")
             }
 
@@ -508,7 +508,7 @@ class ScanService:
                     "screenshot": screenshot_res,
                     "content": {"status": "passed"}
                 },
-                "engine_status": "Google Gemini AI OCR Pipeline",
+                "engine_status": "Scam Breaker Visual OCR Engine",
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M")
             }
 

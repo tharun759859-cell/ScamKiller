@@ -155,8 +155,8 @@ class ReportService:
         # -----------------------------------------------------------------
         scan_id = cls._escape(report_data.get("scan_id") or report_data.get("scanId") or f"SB-{datetime.now().strftime('%y%m%d%H%M')}")
         scan_date = cls._escape(report_data.get("timestamp") or report_data.get("date_reported") or datetime.now().strftime("%Y-%m-%d %H:%M UTC"))
-        engine_status = cls._escape(report_data.get("engine_status") or "AI Contextual Intelligence Active")
-        ai_model = cls._escape(report_data.get("ai_model") or "gemini-3.5-flash-lite")
+        engine_status = cls._escape(report_data.get("engine_status") or "Scam Breaker Neural Threat Intelligence Active")
+        ai_model = cls._escape(report_data.get("ai_model") or "neural-core-v2.4")
         category = cls._escape(report_data.get("scam_category") or report_data.get("category") or report_data.get("scam_type") or report_data.get("threat_category") or "General Threat")
         impersonated_entity = cls._escape(report_data.get("impersonated_entity") or report_data.get("impersonatedEntity") or "None / Unspecified")
         source_type = str(report_data.get("source_type") or report_data.get("sourceType") or report_data.get("scan_type") or "text").lower()
@@ -185,6 +185,10 @@ class ReportService:
             risk_score = int(report_data["risk_score"])
         elif "riskScore" in report_data and report_data["riskScore"] is not None:
             risk_score = int(report_data["riskScore"])
+        elif "threat_score" in report_data and report_data["threat_score"] is not None:
+            risk_score = int(report_data["threat_score"])
+        elif "threatScore" in report_data and report_data["threatScore"] is not None:
+            risk_score = int(report_data["threatScore"])
         else:
             risk_score = default_score
 
@@ -222,7 +226,7 @@ class ReportService:
         # -----------------------------------------------------------------
         header_text = [
             Paragraph("SCAM BREAKER", title_style),
-            Paragraph("Official Cybersecurity Threat Intelligence Assessment Dossier", subtitle_style)
+            Paragraph("Official Cybersecurity Threat Intelligence Assessment Dossier • Stay Ahead of Deception.", subtitle_style)
         ]
         header_table = Table([[header_text]], colWidths=[540])
         header_table.setStyle(TableStyle([
@@ -238,7 +242,7 @@ class ReportService:
         # -----------------------------------------------------------------
         verdict_left = [
             Paragraph(badge_text, badge_style),
-            Paragraph(f"Evaluation Engine: {engine_status} ({ai_model})", sub_verdict_style)
+            Paragraph("Evaluation Engine: Scam Breaker Neural Threat Intelligence Active", sub_verdict_style)
         ]
         score_right = [
             Paragraph(f"{risk_score} / 100", score_val_style),
@@ -306,7 +310,10 @@ class ReportService:
             esc_ocr = cls._escape(extracted_text.strip()[:1200])
             ocr_words = len(extracted_text.split())
             ocr_chars = len(extracted_text)
-            engine_str = cls._escape(str(report_data.get("ocr_engine") or "Visual OCR Engine"))
+            raw_ocr = str(report_data.get("ocr_engine") or "Visual OCR Engine")
+            if "gemini" in raw_ocr.lower():
+                raw_ocr = "High-Accuracy Visual OCR Engine"
+            engine_str = cls._escape(raw_ocr)
             content_items.append([
                 Paragraph(f"<b>Extracted Text via {engine_str} ({ocr_words} words, {ocr_chars} characters):</b>", extracted_header_style)
             ])
