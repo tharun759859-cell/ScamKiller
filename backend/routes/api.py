@@ -1,8 +1,8 @@
 """
-SCAM KILLER — REST API Endpoints
+SCAM BREAKER — REST API Endpoints
 Provides endpoints for threat scanning, history retrieval, data deletion, community intelligence,
 speech transcription, screenshot OCR, PDF report generation, and interactive AI advisory chat.
-Powered by Google Gemini AI.
+Powered by AI safety intelligence.
 """
 
 from flask import Blueprint, request, jsonify, current_app, make_response
@@ -31,7 +31,7 @@ def health_check():
     ocr_languages = getattr(scan_service.screenshot_analyzer, "get_available_languages", lambda: [])()
     return jsonify({
         "status": "healthy",
-        "service": "SCAM KILLER — Smart Scam & Link Detector Backend",
+        "service": "SCAM BREAKER — Smart Scam & Link Detector Backend",
         "version": "2.0.0",
         "server_time": datetime.now().isoformat(),
         "capabilities": {
@@ -58,7 +58,7 @@ def health_check():
 @api_bp.route("/scan", methods=["GET", "POST"])
 def scan_text():
     """
-    Unified text & URL scanning endpoint using Google Gemini AI.
+    Unified text & URL scanning endpoint using AI safety intelligence.
     GET: Returns endpoint status and usage information.
     POST: Analyzes input for scams, threats, and phishing.
     JSON Body:
@@ -66,7 +66,7 @@ def scan_text():
     """
     if request.method == "GET":
         return jsonify({
-            "service": "SCAM KILLER Threat Scanner",
+            "service": "SCAM BREAKER Threat Scanner",
             "endpoint": "/api/scan",
             "status": "active",
             "accepted_method": "POST",
@@ -108,7 +108,7 @@ def chat_advisory():
     """
     if request.method == "GET":
         return jsonify({
-            "service": "SCAM KILLER AI Advisory Chat",
+            "service": "SCAM BREAKER AI Advisory Chat",
             "endpoint": "/api/chat",
             "status": "active",
             "accepted_method": "POST",
@@ -144,7 +144,7 @@ def scan_screenshot():
     """
     if request.method == "GET":
         return jsonify({
-            "service": "SCAM KILLER Screenshot Scanner",
+            "service": "SCAM BREAKER Screenshot Scanner",
             "endpoint": "/api/scan/screenshot",
             "status": "active",
             "accepted_method": "POST"
@@ -243,7 +243,7 @@ def submit_community_report():
     """
     if request.method == "GET":
         return jsonify({
-            "service": "SCAM KILLER Community Reporting",
+            "service": "SCAM BREAKER Community Reporting",
             "endpoint": "/api/community/report",
             "status": "active",
             "accepted_method": "POST"
@@ -301,7 +301,7 @@ def extract_ocr():
     """
     if request.method == "GET":
         return jsonify({
-            "service": "SCAM KILLER Screenshot OCR Engine",
+            "service": "SCAM BREAKER Screenshot OCR Engine",
             "endpoint": "/api/extract/ocr",
             "status": "active",
             "accepted_method": "POST"
@@ -330,7 +330,7 @@ def transcribe_audio():
     """
     if request.method == "GET":
         return jsonify({
-            "service": "SCAM KILLER Audio Transcription Engine",
+            "service": "SCAM BREAKER Audio Transcription Engine",
             "endpoint": "/api/transcribe",
             "status": "active",
             "accepted_method": "POST"
@@ -362,7 +362,7 @@ def download_pdf_report():
     """
     if request.method == "GET":
         return jsonify({
-            "service": "SCAM KILLER PDF Threat Report Engine",
+            "service": "SCAM BREAKER PDF Threat Report Engine",
             "endpoint": "/api/report/pdf",
             "status": "active",
             "accepted_method": "POST"
@@ -382,10 +382,10 @@ def download_pdf_report():
                 data = existing["fullReport"]
 
         pdf_bytes = ReportService.generate_pdf_report(data)
-        scan_id = data.get("scan_id", sid or "scam_killer_report")
+        scan_id = data.get("scan_id", sid or "scam_breaker_report")
         response = make_response(pdf_bytes)
         response.headers["Content-Type"] = "application/pdf"
-        response.headers["Content-Disposition"] = f'attachment; filename="SCAM_KILLER_Report_{scan_id}.pdf"'
+        response.headers["Content-Disposition"] = f'attachment; filename="SCAM_BREAKER_Report_{scan_id}.pdf"'
         return response
     except Exception as exc:
         return jsonify({"error": f"Failed to generate PDF report: {str(exc)}"}), 500

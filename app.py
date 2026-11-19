@@ -1,5 +1,5 @@
 """
-SCAM KILLER — Flask Application Entry Point
+SCAM BREAKER — Flask Application Entry Point
 Modular, secure backend for Smart Scam & Link Detector.
 Serves both the REST API and the frontend dashboard.
 """
@@ -18,5 +18,5 @@ from backend.app import create_app, app
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
-    print(f"[*] SCAM KILLER Backend running on http://127.0.0.1:{port}")
+    print(f"[*] SCAM BREAKER Backend running on http://127.0.0.1:{port}")
     app.run(host="127.0.0.1", port=port, debug=False)

@@ -1,6 +1,6 @@
-// SCAM KILLER — Data Stores & Preset Demonstration Payloads
+// SCAM BREAKER — Data Stores & Preset Demonstration Payloads
 
-const SCAM_KILLER_DATA = {
+const SCAM_BREAKER_DATA = {
   // Recent scans matching the primary reference image
   recentScans: [
     {
@@ -416,8 +416,115 @@ const SCAM_KILLER_DATA = {
       citation: "PayPal Security Center",
       status: "VERIFIED OFFICIAL"
     }
+  ],
+
+  // Authentic Regulatory & Cybersecurity Advisories (RBI, I4C, CERT-In, Sanchar Saathi)
+  officialAdvisories: [
+    {
+      id: "ADV-2026-01",
+      category: "Digital Arrest & Fake Police Calls",
+      source: "MHA / I4C National Cybercrime Advisory",
+      sourceUrl: "https://cybercrime.gov.in",
+      recency: "November 2026",
+      type: "official",
+      summary: "Fraudsters pose as CBI, ED, Police, or Customs officers over Skype/WhatsApp video calls wearing forged uniforms and fake ID badges, claiming your Aadhaar or parcel is linked to illegal narcotics or money laundering.",
+      warningSigns: [
+        "Demands to stay on continuous video call under 'digital arrest'",
+        "Display of forged arrest warrants, court orders, or Supreme Court letters",
+        "Threatening immediate arrest unless money is transferred to 'safe RBI clearing accounts'",
+        "Caller demands absolute secrecy from family members"
+      ],
+      safetyRecommendations: [
+        "Remember: Indian law and police agencies DO NOT have any concept of 'digital arrest'.",
+        "Police or CBI never interrogate citizens via Skype, WhatsApp, or video calls.",
+        "Disconnect the call immediately and dial 1930 or visit cybercrime.gov.in.",
+        "Never transfer money to any personal or unknown account claiming to be 'verification/clearing'."
+      ]
+    },
+    {
+      id: "ADV-2026-02",
+      category: "Banking / KYC Suspension Threat",
+      source: "Reserve Bank of India (RBI) Caution Notice",
+      sourceUrl: "https://rbi.org.in",
+      recency: "November 2026",
+      type: "official",
+      summary: "Phishing SMS claiming your bank account or debit card will be suspended within 24 hours due to non-updated PAN/KYC, prompting you to click a link or download an APK file.",
+      warningSigns: [
+        "SMS sent from personal 10-digit mobile numbers (+91-9xxxxxxxxx) instead of official bank header (e.g. SBIPAY, HDFCBK)",
+        "Urgent 12-hour or 24-hour account suspension ultimatum",
+        "Links pointing to unverified domains (.top, .xyz, .online, .club)",
+        "Requests to install unknown Android APK files (e.g., 'SBI_KYC_Update.apk')"
+      ],
+      safetyRecommendations: [
+        "Never click links sent via SMS claiming to update KYC.",
+        "Legitimate banks never request credentials, passwords, or OTPs via SMS or phone.",
+        "Complete KYC only inside your official bank branch or official NetBanking portal.",
+        "Report fraudulent SMS on the Chakshu portal (sancharsaathi.gov.in)."
+      ]
+    },
+    {
+      id: "ADV-2026-03",
+      category: "Electricity Power Cutoff Threat",
+      source: "Ministry of Power & State Discoms Warning",
+      sourceUrl: "https://cybercrime.gov.in",
+      recency: "November 2026",
+      type: "official",
+      summary: "Mass SMS/WhatsApp notices warning that your electricity connection will be disconnected tonight at 9:30 PM due to unpaid previous month bills, instructing you to call a personal phone number.",
+      warningSigns: [
+        "Specific artificial deadline ('disconnected tonight at 9:30 PM')",
+        "Personal mobile number given to contact the 'Electricity Officer'",
+        "Caller directs you to install AnyDesk, TeamViewer, or quick-support app to 'recharge ₹10'",
+        "Payment requested to a personal UPI ID rather than the official electricity board biller"
+      ],
+      safetyRecommendations: [
+        "Discoms never disconnect power without prior written official notices and registered biller alerts.",
+        "Check your electricity bill status only on your state utility's official consumer portal or national 1912 helpline.",
+        "Never install screen-sharing software on your phone upon a caller's request.",
+        "Never make payments to personal mobile UPI IDs."
+      ]
+    },
+    {
+      id: "ADV-2026-04",
+      category: "Fake Customs / Courier Parcel Surcharge",
+      source: "India Post & Central Board of Indirect Taxes (CBIC)",
+      sourceUrl: "https://indiapost.gov.in",
+      recency: "November 2026",
+      type: "official",
+      summary: "Fake SMS masquerading as India Post, FedEx, or DHL alleging an undelivered parcel due to incomplete address details, demanding a small ₹5 to ₹50 token fee to reschedule delivery.",
+      warningSigns: [
+        "SMS contains short or deceptive link (e.g., indiapost-track.top/pay)",
+        "Token redelivery fee requested via credit/debit card on an insecure web form",
+        "Form harvests full card numbers, CVVs, expiry dates, and then intercepts OTP"
+      ],
+      safetyRecommendations: [
+        "India Post never requests micro-fee payments via external SMS links to update addresses.",
+        "Track packages exclusively on official portals: indiapost.gov.in or official courier apps.",
+        "Never enter banking card numbers on unfamiliar third-party websites."
+      ]
+    },
+    {
+      id: "ADV-2026-05",
+      category: "Work-from-Home Telegram Review Task Fraud",
+      source: "I4C CyberDost / Ministry of Home Affairs",
+      sourceUrl: "https://cybercrime.gov.in",
+      recency: "November 2026",
+      type: "official",
+      summary: "Unsolicited WhatsApp/Telegram offers promising ₹2,000–₹5,000 daily for liking YouTube videos or writing Google hotel reviews. Victims receive initial small payouts before being trapped into depositing large sums for 'VIP tasks'.",
+      warningSigns: [
+        "Unsolicited job offer from international numbers (+62, +84, +234, +1) on WhatsApp or Telegram",
+        "Initial small payout (₹150–₹500) sent to gain victim trust",
+        "Victim added to a Telegram 'task group' with fake members posting screenshots of huge earnings",
+        "Demand to deposit personal money for 'prepaid crypto trading' or 'VIP merchant rating tasks'"
+      ],
+      safetyRecommendations: [
+        "Legitimate employers never demand payment or deposits from employees for tasks.",
+        "Stop interacting immediately if asked to deposit funds to withdraw earnings.",
+        "Report fraudulent Telegram handles and bank account numbers to 1930 and cybercrime.gov.in."
+      ]
+    }
   ]
 };
 
-// Export to window for vanilla JS access
-window.SCAM_KILLER_DATA = SCAM_KILLER_DATA;
+// Export to window for vanilla JS access with backwards-compatible alias
+window.SCAM_BREAKER_DATA = SCAM_BREAKER_DATA;
+window.SCAM_KILLER_DATA = SCAM_BREAKER_DATA;

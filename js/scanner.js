@@ -1,6 +1,6 @@
-// SCAM KILLER — Client-Side Scanner & Threat API Integration Controller (Phase 2)
+// SCAM BREAKER — Client-Side Scanner & Threat API Integration Controller
 
-class ScamKillerScanner {
+class ScamBreakerScanner {
   constructor() {
     this.apiBase = this._resolveApiBase();
   }
@@ -9,8 +9,8 @@ class ScamKillerScanner {
   _resolveApiBase() {
     try {
       // 1. Explicit configuration override
-      if (typeof window !== "undefined" && window.__SCAM_KILLER_API_URL__) {
-        const customUrl = String(window.__SCAM_KILLER_API_URL__).trim().replace(/\/+$/, "");
+      if (typeof window !== "undefined" && (window.__SCAM_BREAKER_API_URL__ || window.__SCAM_KILLER_API_URL__)) {
+        const customUrl = String(window.__SCAM_BREAKER_API_URL__ || window.__SCAM_KILLER_API_URL__).trim().replace(/\/+$/, "");
         return customUrl.endsWith("/api") ? customUrl : `${customUrl}/api`;
       }
 
@@ -106,7 +106,7 @@ class ScamKillerScanner {
     const formData = new FormData();
     formData.append("image", file);
 
-    if (onProgress) onProgress(50, "Running Apple Vision text recognition...");
+    if (onProgress) onProgress(50, "Running text recognition engine...");
 
     const response = await fetch(`${this.apiBase}/extract/ocr`, {
       method: "POST",
@@ -265,7 +265,7 @@ class ScamKillerScanner {
     const downloadUrl = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = downloadUrl;
-    link.download = `SCAM_KILLER_Report_${reportData.scan_id || reportData.scanId || "assessment"}.pdf`;
+    link.download = `SCAM_BREAKER_Report_${reportData.scan_id || reportData.scanId || "assessment"}.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -314,9 +314,11 @@ class ScamKillerScanner {
 }
 
 // Instantiate global scanner instance
-window.scamKillerScanner = new ScamKillerScanner();
+window.scamBreakerScanner = new ScamBreakerScanner();
+window.scamKillerScanner = window.scamBreakerScanner;
 
 // Global API base helper
-window.getScamKillerApiBase = function() {
-  return window.scamKillerScanner ? window.scamKillerScanner.apiBase : "/api";
+window.getScamBreakerApiBase = function() {
+  return window.scamBreakerScanner ? window.scamBreakerScanner.apiBase : "/api";
 };
+window.getScamKillerApiBase = window.getScamBreakerApiBase;

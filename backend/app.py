@@ -1,5 +1,5 @@
 """
-SCAM KILLER — Backend Application Module
+SCAM BREAKER — Backend Application Module
 Serves the REST API, OCR, Audio Transcription, PDF Report Generation, and Frontend assets.
 """
 
@@ -16,7 +16,7 @@ FRONTEND_DIR = os.path.join(PROJECT_ROOT, "frontend")
 
 
 def create_app() -> Flask:
-    """Application factory for SCAM KILLER."""
+    """Application factory for SCAM BREAKER."""
     # Use frontend directory as static folder if available
     static_dir = FRONTEND_DIR if os.path.exists(FRONTEND_DIR) else PROJECT_ROOT
     app = Flask(__name__, static_folder=static_dir, static_url_path="")
@@ -106,5 +106,5 @@ app = create_app()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
-    print(f"[*] SCAM KILLER Backend running on http://127.0.0.1:{port}")
+    print(f"[*] SCAM BREAKER Backend running on http://127.0.0.1:{port}")
     app.run(host="127.0.0.1", port=port, debug=False)

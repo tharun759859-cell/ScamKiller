@@ -1,7 +1,7 @@
 """
-SCAM KILLER — PDF Report Generation Service
+SCAM BREAKER — PDF Report Generation Service
 Generates formal, branded Cybersecurity Threat Intelligence Assessment Reports in PDF format.
-Powered by Google Gemini AI assessment data.
+Powered by AI safety and threat intelligence assessment data.
 """
 
 import io
@@ -87,7 +87,8 @@ class ReportService:
             rightMargin=40,
             leftMargin=40,
             topMargin=36,
-            bottomMargin=36
+            bottomMargin=36,
+            pageCompression=0
         )
 
         styles = cls._get_styles()
@@ -109,7 +110,7 @@ class ReportService:
 
         # 1. Header Banner Table
         header_text = [
-            Paragraph("SCAM KILLER", title_style),
+            Paragraph("SCAM BREAKER", title_style),
             Paragraph("AI-Powered Cybersecurity Threat Intelligence & Scam Detector", subtitle_style)
         ]
         header_table = Table([[header_text]], colWidths=[532])
@@ -134,10 +135,10 @@ class ReportService:
             badge_bg = cls.AMBER_ORANGE
             badge_text = "● CAUTION — VERIFY INDEPENDENTLY"
 
-        scan_id = report_data.get("scan_id", f"SK-{datetime.now().strftime('%y%m%d%H%M')}")
+        scan_id = report_data.get("scan_id", f"SB-{datetime.now().strftime('%y%m%d%H%M')}")
         scan_date = report_data.get("timestamp", datetime.now().strftime("%Y-%m-%d %H:%M UTC"))
         target_item = report_data.get("submitted_item", report_data.get("input_snippet", "User submitted input"))
-        engine_status = report_data.get("engine_status", "Google Gemini AI Intelligence")
+        engine_status = report_data.get("engine_status", "AI Contextual Intelligence Active")
 
         meta_data = [
             [
@@ -273,7 +274,7 @@ class ReportService:
         # 10. Footer & Privacy Assurance
         story.append(HRFlowable(width="100%", thickness=0.5, color=cls.BORDER_COLOR, spaceBefore=4, spaceAfter=8))
         disclaimer = (
-            "<b>Privacy Notice:</b> SCAM KILLER operates under strict client-privacy safeguards. All personal credentials, "
+            "<b>Privacy Notice:</b> SCAM BREAKER operates under strict client-privacy safeguards. All personal credentials, "
             "card numbers, and secret tokens are sanitized prior to telemetry recording. This assessment represents AI-powered "
             "risk analysis and does not constitute formal legal counsel."
         )

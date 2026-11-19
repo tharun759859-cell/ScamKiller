@@ -199,6 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (viewId === "scam-trends") loadScamTrends();
     if (viewId === "community-intel") loadCommunityIntelligence();
     if (viewId === "verification-assistant") renderFullTrustDirectory();
+    if (viewId === "ai-chat") openStickyChatPanel();
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -451,14 +452,24 @@ document.addEventListener("DOMContentLoaded", () => {
     analyzeBtn.addEventListener("click", async () => {
       const inputText = scanInput ? scanInput.value.trim() : "";
       if (!inputText) {
-        alert("Please paste a suspicious message, email, link, or upload media to analyze.");
+        showToast("Please enter a message, URL, or upload media to analyze.", "info");
         if (scanInput) scanInput.focus();
         return;
       }
 
-      // Hide previous results & show modern scanner visual
+      // 1. Disable Analyze button & show active spinner
+      analyzeBtn.disabled = true;
+      analyzeBtn.classList.add("opacity-60", "cursor-not-allowed");
+      const origBtnContent = analyzeBtn.innerHTML;
+      analyzeBtn.innerHTML = `<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span><span>Analyzing Threat...</span>`;
+
+      // 2. Hide previous results & show modern scanner visual
       if (inlineResultCard) inlineResultCard.classList.add("hidden");
-      if (scannerAnimationCard) scannerAnimationCard.classList.remove("hidden");
+      if (scannerAnimationCard) {
+        scannerAnimationCard.classList.remove("hidden");
+        // Automatically scroll smoothly to scanning visual / result area
+        scannerAnimationCard.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
 
       // Animate Status Ticker
       let tickerIndex = 0;
@@ -478,25 +489,30 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
-        const result = await window.scamKillerScanner.analyzeText(inputText, "auto", effectiveSourceType);
+        const scannerInstance = window.scamBreakerScanner || window.scamKillerScanner;
+        const result = await scannerInstance.analyzeText(inputText, "auto", effectiveSourceType);
         lastAnalysisResult = result;
 
         // Persist active report across browser reloads and page refreshes
         try {
+          localStorage.setItem("scambreaker_active_report_data", JSON.stringify(result));
           localStorage.setItem("scamkiller_active_report_data", JSON.stringify(result));
         } catch (e) {
           console.warn("Storage write error:", e);
         }
 
-        // Render Clean 3-Tier Result Component
+        // Render Clean 7-Section Result Component
         renderAnalysisResult(result);
         showToast("Analysis complete! Report saved to Scan History.", "success");
       } catch (err) {
         console.error("Analysis failed:", err);
-        alert(`Analysis Error: ${err.message}`);
+        showToast(`Analysis Error: ${err.message}`, "error");
       } finally {
         clearInterval(tickerInterval);
         if (scannerAnimationCard) scannerAnimationCard.classList.add("hidden");
+        analyzeBtn.disabled = false;
+        analyzeBtn.classList.remove("opacity-60", "cursor-not-allowed");
+        analyzeBtn.innerHTML = origBtnContent;
       }
     });
   }
@@ -505,6 +521,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (closeInlineResultBtn) {
     closeInlineResultBtn.addEventListener("click", () => {
       if (inlineResultCard) inlineResultCard.classList.add("hidden");
+      localStorage.removeItem("scambreaker_active_report_data");
       localStorage.removeItem("scamkiller_active_report_data");
       showToast("Report view closed. The assessment remains safely stored in Scan History.", "info");
     });
@@ -513,26 +530,41 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderAnalysisResult(result) {
     if (!inlineResultCard) return;
 
-    const classification = result.classification || result.risk_label || "Caution";
-    const riskLevel = (result.risk_level || "caution").toLowerCase();
+    let classification = result.classification || result.risk_label || "Caution";
+    let riskLevel = (result.risk_level || "caution").toLowerCase();
 
-    // 1. Classification Badge
+    // Guard against falsely marking unreadable or failed extractions as Safe
+    const rawExplanation = String(result.explanation || "").toLowerCase();
+    const isUnreadable = rawExplanation.includes("unreadable") ||
+                         rawExplanation.includes("could not extract") ||
+                         rawExplanation.includes("timed out") ||
+                         rawExplanation.includes("no legible text");
+
+    if (isUnreadable) {
+      riskLevel = "caution";
+      classification = "Caution — Unreadable Content";
+      result.explanation = "The uploaded screenshot could not be clearly read by the OCR engine. Please upload a sharper, higher-contrast image or paste the text directly into the scanner.";
+      result.why_it_matters = "Incomplete or blurry image text prevents reliable threat detection. Fraudsters frequently use image degradation to evade automated inspection.";
+    }
+
+    // 1. Classification Badge & Risk Assessment Banner
+    const riskBanner = document.getElementById("resultRiskBanner");
     let badgeHtml = "";
     if (riskLevel.includes("suspicious")) {
-      badgeHtml = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 text-rose-800 border border-rose-300 shadow-sm font-mono tracking-wide">
-        ▲ SUSPICIOUS
+      badgeHtml = `<span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-rose-100 text-rose-800 border border-rose-300 shadow-sm font-mono tracking-wide">
+        ▲ SUSPICIOUS — HIGH THREAT PROBABILITY
       </span>`;
-      if (inlineResultHeading) inlineResultHeading.textContent = "Potential Scam Detected";
+      if (riskBanner) riskBanner.className = "p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 border shadow-sm bg-rose-50/70 border-rose-200";
     } else if (riskLevel.includes("safe") || riskLevel.includes("no clear")) {
-      badgeHtml = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm font-mono tracking-wide">
-        ✓ NO CLEAR WARNING SIGNS
+      badgeHtml = `<span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm font-mono tracking-wide">
+        ✓ NO CLEAR WARNING SIGNS — LOW THREAT PROBABILITY
       </span>`;
-      if (inlineResultHeading) inlineResultHeading.textContent = "Content Appears Benign";
+      if (riskBanner) riskBanner.className = "p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 border shadow-sm bg-emerald-50/70 border-emerald-200";
     } else {
-      badgeHtml = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800 border border-amber-300 shadow-sm font-mono tracking-wide">
-        ● CAUTION
+      badgeHtml = `<span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800 border border-amber-300 shadow-sm font-mono tracking-wide">
+        ● CAUTION — VERIFY INDEPENDENTLY
       </span>`;
-      if (inlineResultHeading) inlineResultHeading.textContent = "Caution Advised";
+      if (riskBanner) riskBanner.className = "p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 border shadow-sm bg-amber-50/70 border-amber-200";
     }
 
     if (inlineResultBadge) inlineResultBadge.innerHTML = badgeHtml;
@@ -543,22 +575,24 @@ document.addEventListener("DOMContentLoaded", () => {
       inlineConfidenceBadge.textContent = `Confidence: ${conf}%`;
     }
 
-    // 2. Submitted Item Snippet
-    if (inlineSubmittedItem) {
-      inlineSubmittedItem.textContent = result.submitted_item || (scanInput ? scanInput.value.slice(0, 80) : "");
-    }
-
-    // 3. Plain-Language Explanation
+    // 2. Short Summary
     if (inlineResultExplanation) {
-      inlineResultExplanation.textContent = result.explanation || "No automated explanation available.";
+      inlineResultExplanation.textContent = result.explanation || result.summary || "No automated explanation available.";
     }
 
-    // 4. Detected Warning Indicators (Compact Badges)
+    // 3. Why Suspicious & Contextual Threat
+    if (inlineWhyItMattersText) {
+      inlineWhyItMattersText.textContent = result.why_it_matters || result.reasoning || (
+        "Cybercriminals manipulate trust using forged urgency and authority to access accounts or solicit unauthorized payments."
+      );
+    }
+
+    // 4. Evidence Detected (Threat Indicators)
     if (inlineIndicatorsList) {
       inlineIndicatorsList.innerHTML = "";
       const indicators = result.detected_indicators || [];
       if (indicators.length === 0) {
-        inlineIndicatorsList.innerHTML = `<li class="text-slate-500 italic text-[11px]">No threat indicators detected.</li>`;
+        inlineIndicatorsList.innerHTML = `<li class="text-slate-500 italic text-[11px] p-2 bg-slate-50 rounded-lg border border-slate-200">No severe threat indicators detected in this content. Standard digital security hygiene still applies.</li>`;
       } else {
         indicators.forEach(ind => {
           const title = typeof ind === "string" ? ind : (ind.title || ind.explanation || JSON.stringify(ind));
@@ -580,14 +614,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 5. Why It Matters
-    if (inlineWhyItMattersText) {
-      inlineWhyItMattersText.textContent = result.why_it_matters || (
-        "Cybercriminals manipulate trust using forged urgency and authority to access accounts or solicit unauthorized payments."
-      );
-    }
-
-    // 6. Recommended Safe Next Steps
+    // 5. What You Should Do (Recommended Safe Steps)
     if (inlineNextStepsList) {
       inlineNextStepsList.innerHTML = "";
       const steps = result.recommended_actions || result.recommended_steps || [
@@ -598,12 +625,12 @@ document.addEventListener("DOMContentLoaded", () => {
       steps.forEach((step, i) => {
         const li = document.createElement("li");
         li.className = "flex items-start gap-2";
-        li.innerHTML = `<span class="font-bold text-emerald-600 font-mono text-xs mt-0.5 shrink-0">${i + 1}.</span><span>${escapeHtml(step)}</span>`;
+        li.innerHTML = `<span class="font-bold text-emerald-700 font-mono text-xs mt-0.5 shrink-0">${i + 1}.</span><span>${escapeHtml(step)}</span>`;
         inlineNextStepsList.appendChild(li);
       });
     }
 
-    // 7. Community Match Alert (if present)
+    // Community Match Alert (if present)
     if (inlineCommunityMatch) {
       if (result.community_match && result.community_match.matched) {
         inlineCommunityMatch.classList.remove("hidden");
@@ -1147,10 +1174,53 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
       }
 
+      // Populate Authentic Regulatory & Cybersecurity Advisories
+      const officialGrid = document.getElementById("officialAdvisoriesGrid");
+      if (officialGrid) {
+        const advisories = (window.SCAM_BREAKER_DATA && window.SCAM_BREAKER_DATA.officialAdvisories) || [];
+        officialGrid.innerHTML = "";
+        if (advisories.length === 0) {
+          officialGrid.innerHTML = `
+            <div class="p-6 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-slate-400 text-center text-xs col-span-2">
+              No official advisories currently active.
+            </div>
+          `;
+        } else {
+          advisories.forEach(adv => {
+            const card = document.createElement("div");
+            card.className = "p-4 rounded-xl border border-slate-200 bg-white space-y-3 text-xs shadow-sm hover:border-emerald-300 transition-all";
+            const warningItems = (adv.warningSigns || []).slice(0, 3).map(w => `<li class="flex items-start gap-1.5"><span class="material-symbols-outlined text-rose-500 text-xs shrink-0 mt-0.5">warning</span><span>${escapeHtml(w)}</span></li>`).join("");
+            const recItems = (adv.safetyRecommendations || []).slice(0, 2).map(r => `<li class="flex items-start gap-1.5"><span class="material-symbols-outlined text-emerald-600 text-xs shrink-0 mt-0.5">check_circle</span><span>${escapeHtml(r)}</span></li>`).join("");
+
+            card.innerHTML = `
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <span class="font-mono text-[9px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase font-semibold">${escapeHtml(adv.id)} • ${escapeHtml(adv.recency)}</span>
+                  <h4 class="font-bold text-slate-900 text-sm mt-1.5">${escapeHtml(adv.category)}</h4>
+                  <div class="text-[10px] text-slate-500 mt-0.5">Source: <a href="${escapeHtml(adv.sourceUrl)}" target="_blank" rel="noopener noreferrer" class="text-emerald-700 hover:underline font-medium">${escapeHtml(adv.source)}</a></div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-50 text-amber-800 border border-amber-200 shrink-0">Official Alert</span>
+              </div>
+              <p class="text-slate-600 text-[11px] leading-relaxed">${escapeHtml(adv.summary)}</p>
+              <div class="space-y-1.5 pt-1 border-t border-slate-100">
+                <span class="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Key Warning Signs</span>
+                <ul class="space-y-1 text-[11px] text-slate-600">${warningItems}</ul>
+              </div>
+              <div class="space-y-1.5 pt-1 border-t border-slate-100">
+                <span class="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Safety Recommendations</span>
+                <ul class="space-y-1 text-[11px] text-slate-600">${recItems}</ul>
+              </div>
+            `;
+            officialGrid.appendChild(card);
+          });
+        }
+      }
+
       // Populate Clustered Community Patterns from /api/community/patterns
       if (communityPatternsGrid) {
         try {
-          const patData = await window.scamKillerScanner.getCommunityPatterns();
+          const scannerInstance = window.scamBreakerScanner || window.scamKillerScanner;
+          const patData = await scannerInstance.getCommunityPatterns();
           const patterns = patData.patterns || [];
           communityPatternsGrid.innerHTML = "";
 
@@ -1349,16 +1419,238 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ================================================================
-  // 11. AI CHAT VIEW (Google Gemini AI Advisory Engine)
+  // 11. STICKY AI ADVISORY PANEL & VOICE INPUT ENGINE
   // ================================================================
+  const stickyChatPanel = document.getElementById("stickyChatPanel");
+  const floatingChatToggleBtn = document.getElementById("floatingChatToggleBtn");
+  const chatCloseBtn = document.getElementById("chatCloseBtn");
+  const chatMinimizeBtn = document.getElementById("chatMinimizeBtn");
+  const chatMinimizeIcon = document.getElementById("chatMinimizeIcon");
+  const chatClearBtn = document.getElementById("chatClearBtn");
+  const openStickyChatFromViewBtn = document.getElementById("openStickyChatFromViewBtn");
+
   const chatForm = document.getElementById("chatForm");
   const chatInputText = document.getElementById("chatInputText");
   const chatMessagesContainer = document.getElementById("chatMessagesContainer");
   const chatPromptChips = document.querySelectorAll(".chat-chip");
-  const chatSubmitBtn = chatForm ? chatForm.querySelector("button[type='submit']") : null;
+  const chatSubmitBtn = chatForm ? (document.getElementById("chatSendBtn") || chatForm.querySelector("button[type='submit']")) : null;
+
+  const chatVoiceRecordBtn = document.getElementById("chatVoiceRecordBtn");
+  const chatVoiceRecordingBar = document.getElementById("chatVoiceRecordingBar");
+  const chatVoiceTimer = document.getElementById("chatVoiceTimer");
+  const chatVoiceCancelBtn = document.getElementById("chatVoiceCancelBtn");
+  const chatVoiceStopBtn = document.getElementById("chatVoiceStopBtn");
 
   const chatConversationHistory = [];
 
+  function openStickyChatPanel() {
+    if (!stickyChatPanel) return;
+    stickyChatPanel.classList.remove("hidden");
+    stickyChatPanel.classList.remove("panel-minimized");
+    if (chatMinimizeIcon) chatMinimizeIcon.textContent = "expand_more";
+    if (chatInputText) {
+      setTimeout(() => chatInputText.focus(), 150);
+    }
+  }
+
+  function closeStickyChatPanel() {
+    if (!stickyChatPanel) return;
+    stickyChatPanel.classList.add("hidden");
+  }
+
+  function toggleStickyChatPanel() {
+    if (!stickyChatPanel) return;
+    if (stickyChatPanel.classList.contains("hidden")) {
+      openStickyChatPanel();
+    } else {
+      closeStickyChatPanel();
+    }
+  }
+
+  function minimizeStickyChatPanel() {
+    if (!stickyChatPanel) return;
+    stickyChatPanel.classList.toggle("panel-minimized");
+    if (chatMinimizeIcon) {
+      const isMin = stickyChatPanel.classList.contains("panel-minimized");
+      chatMinimizeIcon.textContent = isMin ? "expand_less" : "expand_more";
+    }
+  }
+
+  function clearChatHistory() {
+    chatConversationHistory.length = 0;
+    if (chatMessagesContainer) {
+      chatMessagesContainer.innerHTML = `
+        <div class="flex items-start gap-2">
+          <div class="w-6 h-6 rounded-full bg-[#092318] text-emerald-400 flex items-center justify-center text-[10px] shrink-0 font-bold">AI</div>
+          <div class="chat-bubble-assistant p-2.5 rounded-xl max-w-[85%] text-xs leading-relaxed shadow-sm">
+            Hello! I am your <b>SCAM BREAKER AI Advisory</b>. You can ask me how to identify phishing tactics, verify unsolicited calls, or safeguard your credentials. How can I help you today?
+          </div>
+        </div>
+      `;
+    }
+    showToast("Chat conversation cleared.", "info");
+  }
+
+  // Bind Sticky Panel Controls
+  if (floatingChatToggleBtn) floatingChatToggleBtn.addEventListener("click", toggleStickyChatPanel);
+  if (chatCloseBtn) chatCloseBtn.addEventListener("click", closeStickyChatPanel);
+  if (chatMinimizeBtn) chatMinimizeBtn.addEventListener("click", minimizeStickyChatPanel);
+  if (chatClearBtn) chatClearBtn.addEventListener("click", clearChatHistory);
+  if (openStickyChatFromViewBtn) openStickyChatFromViewBtn.addEventListener("click", openStickyChatPanel);
+
+  // Expose opener globally for navigation shortcuts
+  window.openStickyChatPanel = openStickyChatPanel;
+
+  // Voice Recording for Chat Input
+  let chatMediaRecorder = null;
+  let chatAudioChunks = [];
+  let chatRecordingInterval = null;
+  let chatRecordingSeconds = 0;
+
+  function formatRecordTimer(secs) {
+    const m = String(Math.floor(secs / 60)).padStart(2, "0");
+    const s = String(secs % 60).padStart(2, "0");
+    return `${m}:${s}`;
+  }
+
+  function stopChatRecordingCleanup() {
+    if (chatRecordingInterval) {
+      clearInterval(chatRecordingInterval);
+      chatRecordingInterval = null;
+    }
+    chatRecordingSeconds = 0;
+    if (chatVoiceTimer) chatVoiceTimer.textContent = "00:00";
+    if (chatVoiceRecordingBar) chatVoiceRecordingBar.classList.add("hidden");
+    if (chatVoiceRecordBtn) chatVoiceRecordBtn.classList.remove("text-rose-600", "animate-pulse");
+  }
+
+  if (chatVoiceRecordBtn) {
+    chatVoiceRecordBtn.addEventListener("click", async () => {
+      if (chatMediaRecorder && chatMediaRecorder.state === "recording") {
+        return;
+      }
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showToast("Audio recording is not supported in this browser.", "error");
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        chatAudioChunks = [];
+
+        const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+          ? "audio/webm;codecs=opus"
+          : (MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "");
+
+        chatMediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+
+        chatMediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            chatAudioChunks.push(e.data);
+          }
+        };
+
+        chatMediaRecorder.onstart = () => {
+          if (chatVoiceRecordingBar) chatVoiceRecordingBar.classList.remove("hidden");
+          chatVoiceRecordBtn.classList.add("text-rose-600", "animate-pulse");
+          chatRecordingSeconds = 0;
+          if (chatVoiceTimer) chatVoiceTimer.textContent = "00:00";
+          chatRecordingInterval = setInterval(() => {
+            chatRecordingSeconds++;
+            if (chatVoiceTimer) chatVoiceTimer.textContent = formatRecordTimer(chatRecordingSeconds);
+            if (chatRecordingSeconds >= 60) {
+              if (chatVoiceStopBtn) chatVoiceStopBtn.click();
+            }
+          }, 1000);
+        };
+
+        chatMediaRecorder.start(250);
+      } catch (err) {
+        console.error("Microphone access error:", err);
+        showToast("Microphone access denied or unavailable: " + (err.message || err), "error");
+      }
+    });
+  }
+
+  if (chatVoiceCancelBtn) {
+    chatVoiceCancelBtn.addEventListener("click", () => {
+      if (chatMediaRecorder && chatMediaRecorder.state !== "inactive") {
+        chatMediaRecorder.onstop = null;
+        chatMediaRecorder.stop();
+        if (chatMediaRecorder.stream) {
+          chatMediaRecorder.stream.getTracks().forEach(t => t.stop());
+        }
+      }
+      chatAudioChunks = [];
+      stopChatRecordingCleanup();
+      showToast("Voice recording cancelled.", "info");
+    });
+  }
+
+  if (chatVoiceStopBtn) {
+    chatVoiceStopBtn.addEventListener("click", () => {
+      if (!chatMediaRecorder || chatMediaRecorder.state === "inactive") {
+        stopChatRecordingCleanup();
+        return;
+      }
+
+      chatMediaRecorder.onstop = async () => {
+        if (chatMediaRecorder.stream) {
+          chatMediaRecorder.stream.getTracks().forEach(t => t.stop());
+        }
+
+        const blobType = chatMediaRecorder.mimeType || "audio/webm";
+        const audioBlob = new Blob(chatAudioChunks, { type: blobType });
+        stopChatRecordingCleanup();
+
+        if (audioBlob.size < 100) {
+          showToast("Recording was too short or empty.", "error");
+          return;
+        }
+
+        showToast("Transcribing speech with AI audio engine...", "info");
+        try {
+          const formData = new FormData();
+          formData.append("file", audioBlob, "voice_input.webm");
+          formData.append("language", "ta-IN");
+
+          const scannerInstance = window.scamBreakerScanner || window.scamKillerScanner;
+          let transcriptText = "";
+
+          if (scannerInstance && typeof scannerInstance.transcribeAudio === "function") {
+            const res = await scannerInstance.transcribeAudio(formData);
+            transcriptText = (res && (res.transcription || res.text || res.transcript)) || "";
+          } else {
+            const res = await fetch(`${getApiBase()}/transcribe`, {
+              method: "POST",
+              body: formData
+            });
+            const data = await res.json();
+            transcriptText = (data && (data.transcription || data.text || data.transcript)) || "";
+          }
+
+          if (transcriptText && transcriptText.trim()) {
+            if (chatInputText) {
+              const existing = chatInputText.value.trim();
+              chatInputText.value = existing ? `${existing} ${transcriptText.trim()}` : transcriptText.trim();
+              chatInputText.focus();
+            }
+            showToast("Speech transcribed! Review and press Send.", "success");
+          } else {
+            showToast("Could not recognize any speech. Please try speaking clearly or typing.", "error");
+          }
+        } catch (err) {
+          console.error("Transcription error:", err);
+          showToast("Transcription failed: " + (err.message || err), "error");
+        }
+      };
+
+      chatMediaRecorder.stop();
+    });
+  }
+
+  // Chat Messaging
   function appendChatMessage(sender, text, isError = false) {
     if (!chatMessagesContainer) return;
     const isUser = sender === "user";
@@ -1376,8 +1668,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const bubbleClass = isError
         ? "chat-bubble-assistant p-3 rounded-xl max-w-lg text-xs leading-relaxed shadow-sm bg-rose-50 border border-rose-200 text-rose-900"
         : "chat-bubble-assistant p-3 rounded-xl max-w-lg text-xs leading-relaxed shadow-sm bg-white border border-slate-200 text-slate-800";
-      
-      const badgeText = isError ? "AI Notice" : "Google Gemini AI";
+
+      const badgeText = isError ? "AI Notice" : "AI Advisory Intelligence";
       const badgeColor = isError ? "text-rose-600" : "text-emerald-700";
       const formatted = escapeHtml(text).replace(/\n/g, "<br>");
 
@@ -1407,7 +1699,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="w-7 h-7 rounded-full bg-[#092318] text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">AI</div>
       <div class="chat-bubble-assistant p-3 rounded-xl max-w-lg text-xs leading-relaxed shadow-sm bg-slate-50 border border-slate-200 text-slate-500 flex items-center gap-2">
         <span class="material-symbols-outlined text-sm animate-spin text-emerald-600">sync</span>
-        <span>Google Gemini AI is analyzing...</span>
+        <span>AI Advisory is analyzing...</span>
       </div>
     `;
     chatMessagesContainer.appendChild(bubble);
@@ -1435,7 +1727,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const typingId = appendChatTypingIndicator();
 
       try {
-        const response = await window.scamKillerScanner.sendChatMessage(chatConversationHistory);
+        const scannerInstance = window.scamBreakerScanner || window.scamKillerScanner;
+        const response = await scannerInstance.sendChatMessage(chatConversationHistory);
         const typingEl = document.getElementById(typingId);
         if (typingEl) typingEl.remove();
 
@@ -1473,7 +1766,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Restore active report if present in localStorage (survives browser reloads and page refreshes)
   try {
-    const savedActiveReport = localStorage.getItem("scamkiller_active_report_data");
+    const savedActiveReport = localStorage.getItem("scambreaker_active_report_data") || localStorage.getItem("scamkiller_active_report_data");
     if (savedActiveReport) {
       const parsed = JSON.parse(savedActiveReport);
       if (parsed && (parsed.scan_id || parsed.scanId)) {

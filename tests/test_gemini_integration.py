@@ -190,7 +190,7 @@ class TestGeminiAIIntegration(unittest.TestCase):
             with self.assertRaises(RuntimeError) as ctx:
                 svc.analyze_content("Test input message")
 
-            self.assertIn("Invalid Google Gemini API key", str(ctx.exception))
+            self.assertIn("Invalid API key", str(ctx.exception))
             self.assertIn(".env", str(ctx.exception))
 
     # -----------------------------------------------------------------

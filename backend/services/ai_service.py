@@ -20,11 +20,15 @@ GEMINI_TIMEOUT_SECONDS = 35
 
 
 def get_project_root() -> str:
-    """Finds the absolute path to the project root directory containing .env or backend/."""
+    """Finds the absolute path to the project root directory containing .env."""
     current = os.path.dirname(os.path.abspath(__file__))
     while current and current != os.path.dirname(current):
-        if os.path.exists(os.path.join(current, ".env")) or os.path.exists(os.path.join(current, "requirements.txt")):
+        if os.path.exists(os.path.join(current, ".env")):
             return current
+        if os.path.basename(current) == "backend":
+            parent = os.path.dirname(current)
+            if os.path.exists(os.path.join(parent, ".env")):
+                return parent
         current = os.path.dirname(current)
     return "/Users/apple/Desktop/scam"
 
@@ -80,7 +84,7 @@ def get_configured_api_key() -> str:
 
 
 def get_configured_model() -> str:
-    """Reads GEMINI_MODEL dynamically from .env or environment with fallback to gemini-2.5-flash."""
+    """Reads GEMINI_MODEL dynamically from .env or environment with fallback to gemini-3.5-flash-lite."""
     disk_model = ""
     if os.path.exists(ENV_FILE_PATH):
         try:
@@ -144,7 +148,7 @@ class ScamAnalysisResult(BaseModel):
 # Dedicated Anti-Fraud Scam Analysis System Prompt
 # -------------------------------------------------------------------------
 
-SCAM_ANALYSIS_SYSTEM_PROMPT = """You are SCAM KILLER AI, an expert cybersecurity fraud analyst and digital scam intelligence engine.
+SCAM_ANALYSIS_SYSTEM_PROMPT = """You are SCAM BREAKER AI, an expert cybersecurity fraud analyst and digital scam intelligence engine.
 Your purpose is to carefully, contextually, and objectively analyze submitted text, messages, emails, links/URLs, screenshots (via OCR text), or transcribed phone call audio to determine whether they represent fraudulent or deceptive activity.
 
 ### CORE OBJECTIVES:
@@ -171,17 +175,19 @@ Your purpose is to carefully, contextually, and objectively analyze submitted te
 # Dedicated AI Advisory Chat System Prompt
 # -------------------------------------------------------------------------
 
-ADVISORY_CHAT_SYSTEM_PROMPT = """You are SCAM KILLER Advisory AI, an empathetic, highly skilled cybersecurity and anti-fraud advisor.
+ADVISORY_CHAT_SYSTEM_PROMPT = """You are SCAM BREAKER AI Advisory, an expert digital safety and anti-fraud advisor.
 Your mission is to help users identify deceptive communication tactics, evaluate suspicious situations, and provide immediate, actionable safety guidance in simple, understandable language.
 
-### BEHAVIOR & SAFETY GUIDELINES:
-1. If the user describes an ONGOING threat or active compromise (e.g., "Someone is on the phone asking for my OTP", "I just shared my NetBanking password"):
-   - Prioritize immediate emergency safety steps FIRST (disconnect the call, freeze bank cards / NetBanking, call the official bank helpline on the back of your card, file a report at cybercrime.gov.in / national helpline 1930).
-2. For educational inquiries ("How do bank KYC scams work?", "Why are APK files dangerous?"):
-   - Provide clear, simple explanations without technical jargon.
-3. Fundamental Anti-Fraud Rules to reinforce:
+### BEHAVIOR & CONCISENESS GUIDELINES:
+1. Conciseness is Critical:
+   - For simple, general, or educational questions, provide a clear, direct, and concise response in 1 to 3 short sentences. Avoid unnecessarily long essays or repetitive filler.
+   - Expand to detailed bullet points only when answering complex multi-part queries or when the user describes an active emergency.
+2. Active Emergency Protocol:
+   - If the user describes an ONGOING threat or active compromise (e.g., "Someone is on the phone asking for my OTP", "I just shared my password / clicked a link"):
+   - Immediately provide emergency steps FIRST: (1) Disconnect call / cease contact, (2) Immediately contact your bank to freeze cards/NetBanking, (3) Call national cybercrime helpline 1930 and report on cybercrime.gov.in.
+3. Fundamental Anti-Fraud Rules:
+   - Receiving money via UPI NEVER requires entering your UPI PIN.
    - Legitimate banks, police, tax officials, and courier services NEVER ask for OTPs, ATM PINs, UPI PINs, or NetBanking passwords.
-   - Receiving money via UPI or QR code NEVER requires entering your UPI PIN.
    - Never install remote desktop applications (AnyDesk, TeamViewer, RustDesk) or APK files sent via WhatsApp/SMS.
 4. Independent Verification Advice:
    - Instruct users to verify callers and websites only through official printed documentation (back of debit card, official monthly statements, official government portal .gov.in).
@@ -374,9 +380,9 @@ class AIService:
 
         client = self._get_client()
 
-        # Prioritize self.model, followed by standard high-throughput models
+        # Prioritize configured model, followed by fast, high-throughput models
         candidate_models = [self.model]
-        for fb in ["gemini-2.5-flash", "gemini-flash-latest", "gemini-flash-lite-latest", "gemini-3.1-flash-lite"]:
+        for fb in ["gemini-flash-lite-latest", "gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"]:
             if fb not in candidate_models:
                 candidate_models.append(fb)
 
@@ -396,21 +402,43 @@ class AIService:
                         )
                     )
 
-                config = types.GenerateContentConfig(
-                    system_instruction=ADVISORY_CHAT_SYSTEM_PROMPT,
-                    temperature=0.4,
-                    max_output_tokens=1024,
-                )
+                # Configure fast response parameters with thinking_budget clamp (~2.0-2.5s target)
+                config_kwargs = {
+                    "system_instruction": ADVISORY_CHAT_SYSTEM_PROMPT,
+                    "temperature": 0.2,
+                    "max_output_tokens": 300,
+                }
+                try:
+                    config_kwargs["thinking_config"] = types.ThinkingConfig(thinking_budget=1)
+                except Exception:
+                    pass
 
-                response = client.models.generate_content(
-                    model=current_model,
-                    contents=chat_contents,
-                    config=config
-                )
+                config = types.GenerateContentConfig(**config_kwargs)
+
+                try:
+                    response = client.models.generate_content(
+                        model=current_model,
+                        contents=chat_contents,
+                        config=config
+                    )
+                except Exception as gen_err:
+                    if "thinking" in str(gen_err).lower() or "INVALID_ARGUMENT" in str(gen_err):
+                        fallback_config = types.GenerateContentConfig(
+                            system_instruction=ADVISORY_CHAT_SYSTEM_PROMPT,
+                            temperature=0.2,
+                            max_output_tokens=300,
+                        )
+                        response = client.models.generate_content(
+                            model=current_model,
+                            contents=chat_contents,
+                            config=fallback_config
+                        )
+                    else:
+                        raise
 
                 reply_text = response.text or ""
                 if not reply_text.strip():
-                    raise RuntimeError("Google Gemini returned an empty chat reply.")
+                    raise RuntimeError("AI service returned an empty chat reply.")
 
                 return {
                     "role": "assistant",
@@ -527,44 +555,43 @@ class AIService:
             "verification_advice": verification_advice,
             "important_uncertainties": uncertainties,
             "limitations": uncertainties,
-            "engine_status": "Google Gemini AI Contextual Intelligence Active",
+            "engine_status": "AI Contextual Intelligence Active",
             "ai_model": self.model
         }
 
     def _handle_gemini_error(self, exc: Exception) -> None:
-        """Translates google-genai and network exceptions into user-friendly messages."""
-        logger.error(f"Google Gemini API error: {type(exc).__name__}: {str(exc)}")
+        """Translates exceptions into user-friendly messages."""
+        logger.error(f"AI Service error: {type(exc).__name__}: {str(exc)}")
 
-        # Check for google.genai.errors.APIError
         err_msg = str(exc)
         code = getattr(exc, "code", None)
 
         if code in (400, 403) or "API_KEY_INVALID" in err_msg or "API key not valid" in err_msg or "api_key" in err_msg.lower():
             raise RuntimeError(
-                "Invalid Google Gemini API key. Please check your GEMINI_API_KEY in the root .env file."
+                "Invalid API key. Please check your GEMINI_API_KEY in the root .env file."
             )
         elif "not found" in err_msg.lower() or "unknown model" in err_msg.lower() or ("model" in err_msg.lower() and ("not supported" in err_msg.lower() or "unsupported" in err_msg.lower())):
             raise RuntimeError(
-                f"Configured Gemini model '{self.model}' is not recognized or not available. Please verify GEMINI_MODEL in the root .env file."
+                f"Configured AI model '{self.model}' is not recognized or not available. Please verify GEMINI_MODEL in the root .env file."
             )
         elif code == 429 or "RESOURCE_EXHAUSTED" in err_msg or "quota" in err_msg.lower():
             raise RuntimeError(
-                "Google Gemini API quota exceeded or rate limit reached. Please check your Gemini account quota or try again in a moment."
+                "AI service quota exceeded or rate limit reached. Please check your account quota or try again in a moment."
             )
         elif code and code >= 500:
             raise RuntimeError(
-                "Google Gemini AI service is temporarily unavailable. Please retry in a few moments."
+                "AI service is temporarily unavailable. Please retry in a few moments."
             )
         elif "timeout" in err_msg.lower() or isinstance(exc, TimeoutError):
             raise RuntimeError(
-                f"Google Gemini API request timed out after {GEMINI_TIMEOUT_SECONDS}s. Please try again."
+                f"AI service request timed out after {GEMINI_TIMEOUT_SECONDS}s. Please try again."
             )
         elif "connect" in err_msg.lower() or "network" in err_msg.lower() or "nodename" in err_msg.lower():
             raise RuntimeError(
-                "Failed to connect to Google Gemini API. Please check your network connection."
+                "Failed to connect to AI service. Please check your network connection."
             )
         else:
-            raise RuntimeError(f"Google Gemini analysis error: {err_msg}")
+            raise RuntimeError(f"AI analysis error: {err_msg}")
 
     def _generate_simulated_ai_response(self, content: str, source_type: str) -> Dict[str, Any]:
         """
@@ -634,7 +661,7 @@ class AIService:
                     "Domain registration records could not be queried live in test mode.",
                     "Caller ID transmission headers cannot be verified from message body alone."
                 ],
-                "engine_status": "Google Gemini AI Contextual Intelligence (Simulated)",
+                "engine_status": "AI Contextual Intelligence Active (Simulated)",
                 "ai_model": self.model
             }
         elif is_caution:
@@ -670,7 +697,7 @@ class AIService:
                     "Carrier dispatch status not verified.",
                     "Commercial sender identity not cryptographically verified."
                 ],
-                "engine_status": "Google Gemini AI Contextual Intelligence (Simulated)",
+                "engine_status": "AI Contextual Intelligence Active (Simulated)",
                 "ai_model": self.model
             }
         else:
@@ -699,7 +726,7 @@ class AIService:
                     "Absence of warning signs does not guarantee absolute safety.",
                     "Sender email headers and transmission metadata were not cryptographically verified."
                 ],
-                "engine_status": "Google Gemini AI Contextual Intelligence (Simulated)",
+                "engine_status": "AI Contextual Intelligence Active (Simulated)",
                 "ai_model": self.model
             }
 
@@ -734,7 +761,7 @@ class AIService:
             )
         else:
             return (
-                "I am SCAM KILLER Advisory AI. Never share one-time passwords, NetBanking credentials, "
+                "I am SCAM BREAKER AI Advisory. Never share one-time passwords, NetBanking credentials, "
                 "or install remote desktop applications (like AnyDesk or TeamViewer) at the request of unsolicited callers or messages. "
                 "Always verify claims directly through the organization's published official website."
             )

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SCAM KILLER — Smart Scam &amp; Link Detector</title>
+  <title>SCAM BREAKER — Smart Scam &amp; Threat Detector</title>
 
   <!-- Google Fonts: Inter / Geist + Material Symbols Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -61,10 +61,10 @@
             <path d="m9 12 2 2 4-4" stroke-width="2.5" />
           </svg>
         </div>
-        <!-- Logo Text: SCAM (white) KILLER (emerald green) -->
+        <!-- Logo Text: SCAM (white) BREAKER (emerald green) -->
         <div class="flex flex-col leading-none">
           <span class="font-extrabold text-lg tracking-wider text-white">SCAM</span>
-          <span class="font-extrabold text-lg tracking-wider text-emerald-400 -mt-0.5">KILLER</span>
+          <span class="font-extrabold text-lg tracking-wider text-emerald-400 -mt-0.5">BREAKER</span>
         </div>
       </a>
 
@@ -100,10 +100,10 @@
           <span>Trust Directory</span>
         </a>
 
-        <!-- 6. AI Chat (Phase 2 Ready) -->
-        <a href="#" data-nav-target="ai-chat" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
+        <!-- 6. AI Advisory -->
+        <a href="#" id="sidebarAiAdvisoryLink" data-nav-target="ai-chat" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
           <span class="material-symbols-outlined text-xl">smart_toy</span>
-          <span>AI Advisory Chat</span>
+          <span>AI Advisory</span>
         </a>
 
         <!-- 7. Settings -->
@@ -140,7 +140,7 @@
 
     <!-- TOP NAVIGATION BAR -->
     <header class="h-16 px-4 lg:px-8 border-b border-slate-200 bg-white/95 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between shadow-sm">
-      <!-- Left side: Mobile Toggle + SCAM KILLER Logo -->
+      <!-- Left side: Mobile Toggle + SCAM BREAKER Logo -->
       <div class="flex items-center gap-3">
         <button id="mobileSidebarToggle" class="lg:hidden p-1.5 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors" title="Toggle Menu">
           <span class="material-symbols-outlined text-2xl">menu</span>
@@ -155,7 +155,7 @@
           </div>
           <div class="flex items-center gap-1 leading-none">
             <span class="font-extrabold text-base tracking-wider text-slate-900">SCAM</span>
-            <span class="font-extrabold text-base tracking-wider text-emerald-600">KILLER</span>
+            <span class="font-extrabold text-base tracking-wider text-emerald-600">BREAKER</span>
           </div>
         </a>
       </div>
@@ -359,7 +359,7 @@
               <span class="material-symbols-outlined text-xs text-emerald-600">lock</span>
               <span>Zero-Log Architecture • Credentials and OTPs sanitized immediately</span>
             </span>
-            <span class="font-mono text-[10px]">Phase 1 Intelligence Platform</span>
+            <span class="font-mono text-[10px] text-slate-400">Zero-Credential Logging Enforced</span>
           </div>
         </section>
 
@@ -377,18 +377,19 @@
           </div>
         </section>
 
-        <!-- 4. COMPACT AI RESULT COMPONENT -->
-        <section id="inlineResultCard" class="hidden cyber-card rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-md space-y-4 bg-white transition-all">
-          <!-- Top Row: Classification Badge + Confidence + DeepSeek AI Label -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-            <div class="flex items-center gap-2.5">
+        <!-- 4. REDESIGNED 7-SECTION AI RESULT COMPONENT -->
+        <section id="inlineResultCard" class="hidden cyber-card rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-md space-y-5 bg-white transition-all">
+          
+          <!-- Section 1: Risk Assessment Banner -->
+          <div id="resultRiskBanner" class="p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 border shadow-sm bg-slate-50 border-slate-200">
+            <div class="flex items-center gap-3">
               <div id="inlineResultBadge"></div>
-              <span id="inlineConfidenceBadge" class="text-[11px] font-mono text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200"></span>
+              <span id="inlineConfidenceBadge" class="text-xs font-mono font-semibold px-2.5 py-0.5 rounded-full border border-slate-200 text-slate-700 bg-white"></span>
             </div>
             <div class="flex items-center gap-2">
-              <span class="flex items-center gap-1 text-[11px] font-mono text-emerald-800 bg-emerald-50/80 px-2.5 py-1 rounded-full border border-emerald-200/80">
-                <span class="material-symbols-outlined text-xs text-emerald-600">psychology</span>
-                <span>Google Gemini AI Intelligence</span>
+              <span class="flex items-center gap-1.5 text-xs font-mono text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                <span class="material-symbols-outlined text-sm text-emerald-600">psychology</span>
+                <span>AI Contextual Intelligence Active</span>
               </span>
             </div>
           </div>
@@ -403,21 +404,97 @@
             <span id="inlineCommunityMatchUpvotes" class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-mono shrink-0"></span>
           </div>
 
-          <!-- Short AI-Generated Explanation -->
-          <div class="space-y-1">
-            <p id="inlineResultExplanation" class="text-xs sm:text-sm font-medium text-slate-800 leading-relaxed"></p>
+          <!-- Section 2: Short Summary -->
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs text-slate-600">short_text</span>
+              <span>1. Short Summary</span>
+            </span>
+            <p id="inlineResultExplanation" class="text-xs sm:text-sm font-semibold text-slate-800 leading-relaxed"></p>
           </div>
 
-          <!-- Main Detected Threat Indicators (Compact Badges) -->
-          <div id="inlineIndicatorsContainer" class="space-y-1.5">
-            <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">Key Detected Threat Indicators</span>
+          <!-- Section 3: Why Suspicious -->
+          <div id="inlineWhyItMattersContainer" class="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-amber-950 space-y-1.5">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-amber-800 font-bold flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs text-amber-600">crisis_alert</span>
+              <span>2. Why Suspicious &amp; Threat Breakdown</span>
+            </span>
+            <p id="inlineWhyItMattersText" class="text-xs text-amber-900 leading-relaxed font-normal"></p>
+          </div>
+
+          <!-- Section 4: Evidence Detected -->
+          <div id="inlineIndicatorsContainer" class="space-y-2">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs text-rose-500">find_in_page</span>
+              <span>3. Evidence Detected &amp; Scam Triggers</span>
+            </span>
             <ul id="inlineIndicatorsList" class="flex flex-wrap gap-2 text-xs"></ul>
           </div>
 
-          <!-- Why This Matters Note -->
-          <div id="inlineWhyItMattersContainer" class="p-3 rounded-xl bg-amber-50/70 border border-amber-200/70 text-xs text-amber-950 flex items-start gap-2.5">
-            <span class="material-symbols-outlined text-base text-amber-600 shrink-0 mt-0.5">info</span>
-            <p id="inlineWhyItMattersText" class="leading-relaxed text-xs"></p>
+          <!-- Section 5: What You Should Do -->
+          <div class="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200 text-emerald-950 space-y-2">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-emerald-800 font-bold flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs text-emerald-600">check_circle</span>
+              <span>4. What You Should Do (Recommended Safe Steps)</span>
+            </span>
+            <ul id="inlineNextStepsList" class="space-y-1.5 text-xs text-emerald-900"></ul>
+          </div>
+
+          <!-- Section 6: What You Should Avoid -->
+          <div class="p-4 rounded-xl bg-rose-50/70 border border-rose-200 text-rose-950 space-y-2">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-rose-800 font-bold flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs text-rose-600">cancel</span>
+              <span>5. What You Should Avoid (Critical Hazards)</span>
+            </span>
+            <ul id="inlineAvoidList" class="space-y-1.5 text-xs text-rose-900">
+              <li class="avoid-cross-item"><b>Never disclose One-Time Passwords (OTPs)</b>, ATM PINs, UPI PINs, or NetBanking passwords to any caller or website.</li>
+              <li class="avoid-cross-item"><b>Do not click suspicious links</b> or download unknown attachments or Android APK files (.apk).</li>
+              <li class="avoid-cross-item"><b>Do not install screen-sharing tools</b> (AnyDesk, TeamViewer, RustDesk) requested by callers.</li>
+              <li class="avoid-cross-item"><b>Never send money or scan QR codes</b> to claim prizes, unlock bank accounts, or pay electricity bills on personal UPI IDs.</li>
+            </ul>
+          </div>
+
+          <!-- Section 7: Official Reporting Options (India Focus) -->
+          <div class="p-4 rounded-xl bg-slate-900 text-white space-y-3 shadow-sm border border-slate-800">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-bold flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs text-emerald-400">policy</span>
+                <span>6. Official Cybercrime Help &amp; Reporting (India)</span>
+              </span>
+              <span class="text-[9px] font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">Govt of India Portals</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+              <a href="tel:1930" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-2.5 transition-colors group">
+                <span class="w-8 h-8 rounded-md bg-rose-600/20 text-rose-400 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-base">call</span>
+                </span>
+                <div>
+                  <span class="font-bold text-white block group-hover:text-emerald-300">Helpline 1930</span>
+                  <span class="text-[10px] text-slate-400 block">Immediate Financial Cyber Fraud</span>
+                </div>
+              </a>
+              <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-2.5 transition-colors group">
+                <span class="w-8 h-8 rounded-md bg-emerald-600/20 text-emerald-400 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-base">language</span>
+                </span>
+                <div>
+                  <span class="font-bold text-white block group-hover:text-emerald-300">cybercrime.gov.in</span>
+                  <span class="text-[10px] text-slate-400 block">National Cyber Crime Reporting</span>
+                </div>
+              </a>
+              <a href="https://sancharsaathi.gov.in/sfc/" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center gap-2.5 transition-colors group">
+                <span class="w-8 h-8 rounded-md bg-sky-600/20 text-sky-400 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-base">shield</span>
+                </span>
+                <div>
+                  <span class="font-bold text-white block group-hover:text-emerald-300">Chakshu Portal</span>
+                  <span class="text-[10px] text-slate-400 block">Report Fraudulent SMS &amp; Calls</span>
+                </div>
+              </a>
+            </div>
+            <p class="text-[10px] text-slate-400 font-mono leading-relaxed pt-1 border-t border-slate-800">
+              <span class="text-slate-300 font-semibold">Disclaimer:</span> SCAM BREAKER is an independent educational &amp; digital safety platform. It is not affiliated with, endorsed by, or representing any government entity or financial institution.
+            </p>
           </div>
 
           <!-- Footer Actions: View Full Details, Download PDF Report, Close Report View -->
@@ -594,6 +671,23 @@
             </div>
           </div>
 
+          <!-- Verified Regulatory & Cybersecurity Advisories Section -->
+          <div class="space-y-3 pt-4 border-t border-slate-200">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-900 font-mono flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-emerald-600 text-sm">verified</span>
+                  <span>Verified Regulatory &amp; Cybersecurity Advisories</span>
+                </h3>
+                <p class="text-[11px] text-slate-500">Official warnings from RBI, CERT-In, I4C, and Sanchar Saathi.</p>
+              </div>
+              <span class="text-[10px] font-mono text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">Official Authorities</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="officialAdvisoriesGrid">
+              <!-- Dynamically populated from SCAM_BREAKER_DATA.officialAdvisories -->
+            </div>
+          </div>
+
           <!-- Structured Community Pattern Clusters -->
           <div class="space-y-3 pt-4 border-t border-slate-200">
             <div class="flex items-center justify-between">
@@ -669,63 +763,66 @@
       </div>
 
       <!-- ============================================================== -->
-      <!-- VIEW 6: AI ADVISORY CHAT (Phase 2 Ready)                       -->
+      <!-- VIEW 6: AI ADVISORY CHAT                                       -->
       <!-- ============================================================== -->
       <div id="view-ai-chat" class="view-section space-y-5" style="display: none;">
-        <div class="cyber-card rounded-2xl p-6 border border-slate-200 bg-white shadow-sm space-y-5">
+        <div class="cyber-card rounded-2xl p-6 sm:p-8 border border-slate-200 bg-white shadow-sm space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
             <div>
-              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <span class="material-symbols-outlined text-emerald-600">smart_toy</span>
-                AI Scam Advisory Chat
+              <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600 text-2xl">smart_toy</span>
+                AI Advisory Assistant
               </h2>
-              <p class="text-xs text-slate-500">Ask freeform cybersecurity questions without uploading files.</p>
+              <p class="text-xs text-slate-500 mt-1">Real-time educational intelligence and scam prevention guidance.</p>
             </div>
-            <span class="text-[10px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full self-start sm:self-auto">
-              Google Gemini AI Engine
+            <span class="text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full self-start sm:self-auto font-semibold">
+              AI Contextual Intelligence Active
             </span>
           </div>
 
-          <!-- Notice Banner -->
-          <div class="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200 text-xs text-emerald-950 flex items-center gap-2.5">
-            <span class="material-symbols-outlined text-emerald-700 text-base shrink-0">info</span>
-            <span><b>Active Gemini Advisory:</b> Ask questions about suspicious messages, verify suspicious situations, or get immediate safety steps. Powered by Google Gemini AI.</span>
-          </div>
-
-          <!-- Quick Prompt Chips -->
-          <div class="flex flex-wrap items-center gap-2" id="chatPromptChips">
-            <button class="chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium border border-slate-200 transition-colors">
-              How do I spot a fake bank KYC message?
-            </button>
-            <button class="chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium border border-slate-200 transition-colors">
-              What should I do if I shared my OTP?
-            </button>
-            <button class="chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium border border-slate-200 transition-colors">
-              How can I tell if a parcel delivery SMS is genuine?
-            </button>
-            <button class="chat-chip px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-medium border border-slate-200 transition-colors">
-              Why are APK downloads from WhatsApp dangerous?
-            </button>
-          </div>
-
-          <!-- Chat Stream Box -->
-          <div id="chatMessagesContainer" class="p-4 rounded-xl bg-slate-50 border border-slate-200 h-80 overflow-y-auto space-y-3">
-            <div class="flex items-start gap-2.5">
-              <div class="w-7 h-7 rounded-full bg-[#092318] text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">AI</div>
-              <div class="chat-bubble-assistant p-3 rounded-xl max-w-lg text-xs leading-relaxed shadow-sm">
-                Hello! I am the <b>SCAM KILLER Security Assistant</b>. You can ask me how to identify specific phishing tactics, verify unsolicited calls, or safeguard your credentials. How can I assist you today?
+          <!-- Feature Spotlight Banner -->
+          <div class="p-5 rounded-2xl bg-gradient-to-br from-[#092318] via-[#0e3323] to-[#092318] text-white space-y-3 shadow-md border border-emerald-700/50">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400">
+                <span class="material-symbols-outlined text-2xl">support_agent</span>
               </div>
+              <div>
+                <h3 class="font-bold text-sm text-white">Sticky AI Advisory Panel Active</h3>
+                <p class="text-xs text-emerald-200/80">The AI Advisory panel floats across all pages so you can consult it anytime while reviewing scans.</p>
+              </div>
+            </div>
+            <div class="pt-2 flex flex-wrap items-center gap-3">
+              <button type="button" id="openStickyChatFromViewBtn" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs tracking-wide transition-all shadow-md flex items-center gap-2 active:scale-95">
+                <span class="material-symbols-outlined text-base">chat</span>
+                <span>Open AI Advisory Chat Panel</span>
+              </button>
             </div>
           </div>
 
-          <!-- Chat Input -->
-          <form id="chatForm" class="flex items-center gap-2">
-            <input type="text" id="chatInputText" placeholder="Ask any question about scam messages, suspicious links, or digital safety..." class="flex-1 px-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-600 bg-white shadow-sm" />
-            <button type="submit" id="chatSendBtn" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs tracking-wide transition-all shadow-sm flex items-center gap-1.5">
-              <span>Send</span>
-              <span class="material-symbols-outlined text-sm">send</span>
-            </button>
-          </form>
+          <!-- Advisory Capabilities Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+              <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                <span class="material-symbols-outlined text-base">verified</span>
+              </div>
+              <h4 class="font-bold text-slate-900">Spot Phishing &amp; KYC Lures</h4>
+              <p class="text-slate-600 text-[11px] leading-relaxed">Learn how to differentiate legitimate bank alerts from spoofed SMS and fraudulent APK links.</p>
+            </div>
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+              <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center">
+                <span class="material-symbols-outlined text-base">mic</span>
+              </div>
+              <h4 class="font-bold text-slate-900">Direct Voice Input</h4>
+              <p class="text-slate-600 text-[11px] leading-relaxed">Tap the microphone in the advisory panel to record speech in Tamil or English and convert it to text.</p>
+            </div>
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+              <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-800 flex items-center justify-center">
+                <span class="material-symbols-outlined text-base">emergency</span>
+              </div>
+              <h4 class="font-bold text-slate-900">Emergency Guidance</h4>
+              <p class="text-slate-600 text-[11px] leading-relaxed">Immediate steps if you compromised a credential, clicked a link, or sent money to a fraudster.</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -793,7 +890,7 @@
     <!-- FOOTER -->
     <footer class="mt-auto border-t border-slate-200 bg-white py-4 px-4 sm:px-8 text-center text-xs text-slate-500">
       <div class="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <span>SCAM KILLER v1.0.0 • AI-Powered Scam Intelligence Platform (Phase 1)</span>
+        <span>SCAM BREAKER • Smart Scam &amp; Threat Detection Platform</span>
         <span class="font-mono text-[11px] text-emerald-700">Strict Privacy Safeguards • Zero-Log Storage</span>
       </div>
     </footer>
@@ -813,7 +910,7 @@
           </div>
           <div>
             <h3 class="font-bold text-sm tracking-wide">Threat Intelligence Assessment Report</h3>
-            <p class="text-[11px] text-emerald-300/80 font-mono">SCAM KILLER Evaluation Certificate</p>
+            <p class="text-[11px] text-emerald-300/80 font-mono">SCAM BREAKER Evaluation Certificate</p>
           </div>
         </div>
         <button id="closeFullReportModalBtn" type="button" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/10 transition-colors" title="Close report">
@@ -827,7 +924,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-[11px]">
           <div>
             <span class="text-slate-400 block text-[9px] uppercase">Assessment ID</span>
-            <span id="modalReportScanId" class="font-bold text-slate-900 block truncate">SK-00000000</span>
+            <span id="modalReportScanId" class="font-bold text-slate-900 block truncate">SB-00000000</span>
           </div>
           <div>
             <span class="text-slate-400 block text-[9px] uppercase">Date &amp; Time</span>
@@ -835,7 +932,7 @@
           </div>
           <div>
             <span class="text-slate-400 block text-[9px] uppercase">Evaluation</span>
-            <span id="modalReportEngineStatus" class="text-emerald-700 block truncate font-bold">Google Gemini AI</span>
+            <span id="modalReportEngineStatus" class="text-emerald-700 block truncate font-bold">AI Safety Analysis</span>
           </div>
           <div>
             <span class="text-slate-400 block text-[9px] uppercase">Zero-Log Policy</span>
@@ -964,6 +1061,120 @@
       </div>
     </form>
   </dialog>
+
+  <!-- ================================================================ -->
+  <!-- FLOATING ACTION BUTTON: AI ADVISORY                              -->
+  <!-- ================================================================ -->
+  <button id="floatingChatToggleBtn" type="button" class="fixed bottom-6 right-6 z-40 px-4 py-3 rounded-full bg-[#092318] text-white border border-emerald-500/50 shadow-2xl hover:bg-[#0e3323] transition-all flex items-center gap-2.5 group cursor-pointer active:scale-95" title="Open AI Advisory Panel">
+    <div class="relative w-2.5 h-2.5 rounded-full bg-emerald-400">
+      <span class="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75"></span>
+    </div>
+    <span class="material-symbols-outlined text-emerald-400 text-xl group-hover:scale-110 transition-transform">smart_toy</span>
+    <span class="font-bold text-xs tracking-wide">AI Advisory</span>
+  </button>
+
+  <!-- ================================================================ -->
+  <!-- STICKY FLOATING AI ADVISORY PANEL                                -->
+  <!-- ================================================================ -->
+  <aside id="stickyChatPanel" class="fixed bottom-6 right-6 z-50 w-[420px] max-w-[calc(100vw-2rem)] h-[580px] max-h-[85vh] max-sm:inset-x-0 max-sm:bottom-0 max-sm:h-[82vh] max-sm:w-full max-sm:rounded-b-none bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden hidden" aria-label="AI Advisory Panel">
+    <!-- Panel Header -->
+    <div class="p-3.5 sm:p-4 bg-[#092318] text-white flex items-center justify-between border-b border-[#154631] shrink-0 select-none">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-400">
+          <span class="material-symbols-outlined text-lg">smart_toy</span>
+        </div>
+        <div>
+          <h3 class="font-bold text-xs sm:text-sm tracking-wide flex items-center gap-1.5">
+            <span>AI Advisory</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+          </h3>
+          <p class="text-[10px] text-emerald-300/80 font-mono">Digital Safety &amp; Anti-Fraud</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1">
+        <button id="chatClearBtn" type="button" class="text-slate-300 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors" title="Clear chat conversation">
+          <span class="material-symbols-outlined text-base">delete_sweep</span>
+        </button>
+        <button id="chatMinimizeBtn" type="button" class="text-slate-300 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors" title="Minimize panel">
+          <span class="material-symbols-outlined text-base" id="chatMinimizeIcon">expand_more</span>
+        </button>
+        <button id="chatCloseBtn" type="button" class="text-slate-300 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors" title="Close panel">
+          <span class="material-symbols-outlined text-base">close</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Panel Body -->
+    <div id="stickyChatBody" class="flex-1 flex flex-col min-h-0 bg-slate-50">
+      
+      <!-- Notice Banner -->
+      <div class="p-2.5 px-3 bg-emerald-50/80 border-b border-emerald-100 text-[11px] text-emerald-950 flex items-center justify-between shrink-0">
+        <span class="flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-emerald-700 text-xs">shield</span>
+          <span>Ask freeform safety questions without uploading files.</span>
+        </span>
+        <span class="font-mono text-[9px] text-emerald-700 font-semibold bg-emerald-100/60 px-1.5 py-0.5 rounded">Active</span>
+      </div>
+
+      <!-- Quick Prompt Chips -->
+      <div class="p-2.5 border-b border-slate-200 bg-white flex flex-wrap gap-1.5 shrink-0" id="chatPromptChips">
+        <button class="chat-chip px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium border border-slate-200 transition-colors">
+          How do I spot a fake bank KYC SMS?
+        </button>
+        <button class="chat-chip px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium border border-slate-200 transition-colors">
+          What should I do if I shared an OTP?
+        </button>
+        <button class="chat-chip px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium border border-slate-200 transition-colors">
+          Is a parcel delivery fee SMS real?
+        </button>
+        <button class="chat-chip px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium border border-slate-200 transition-colors">
+          Why are APK downloads dangerous?
+        </button>
+      </div>
+
+      <!-- Chat Messages Container -->
+      <div id="chatMessagesContainer" class="flex-1 p-3.5 overflow-y-auto space-y-3 text-xs">
+        <div class="flex items-start gap-2">
+          <div class="w-6 h-6 rounded-full bg-[#092318] text-emerald-400 flex items-center justify-center text-[10px] shrink-0 font-bold">AI</div>
+          <div class="chat-bubble-assistant p-2.5 rounded-xl max-w-[85%] text-xs leading-relaxed shadow-sm">
+            Hello! I am your <b>SCAM BREAKER AI Advisory</b>. You can ask me how to identify phishing tactics, verify unsolicited calls, or safeguard your credentials. How can I help you today?
+          </div>
+        </div>
+      </div>
+
+      <!-- Voice Recording Indicator Bar -->
+      <div id="chatVoiceRecordingBar" class="hidden p-2.5 bg-rose-50 border-t border-rose-200 flex items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping"></span>
+          <span class="text-xs font-bold text-rose-900">Recording speech...</span>
+          <span id="chatVoiceTimer" class="font-mono text-xs font-semibold text-rose-700">00:00</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button type="button" id="chatVoiceCancelBtn" class="px-2 py-1 rounded bg-white hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-medium transition-colors">
+            Cancel
+          </button>
+          <button type="button" id="chatVoiceStopBtn" class="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold transition-colors flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">done</span>
+            <span>Transcribe</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat Input Form -->
+      <form id="chatForm" class="p-2.5 bg-white border-t border-slate-200 shrink-0 space-y-1.5">
+        <div class="flex items-center gap-1.5">
+          <button type="button" id="chatVoiceRecordBtn" class="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors shrink-0" title="Voice Input (Microphone)">
+            <span class="material-symbols-outlined text-lg">mic</span>
+          </button>
+          <input type="text" id="chatInputText" placeholder="Ask any scam, fraud, or safety question..." class="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-emerald-600 bg-slate-50" />
+          <button type="submit" id="chatSendBtn" class="p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-all shrink-0 flex items-center justify-center shadow-sm active:scale-95" title="Send message">
+            <span class="material-symbols-outlined text-base">send</span>
+          </button>
+        </div>
+        <p class="text-[10px] text-slate-400 font-mono text-center">AI Advisory is for educational guidance. Never share passwords or OTPs.</p>
+      </form>
+    </div>
+  </aside>
 
   <!-- Floating Toast Notifications -->
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
