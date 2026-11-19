@@ -1880,11 +1880,36 @@ document.addEventListener("DOMContentLoaded", () => {
   let chatAudioChunks = [];
   let chatRecordingInterval = null;
   let chatRecordingSeconds = 0;
+  let chatActiveMimeType = "";
 
   function formatRecordTimer(secs) {
     const m = String(Math.floor(secs / 60)).padStart(2, "0");
     const s = String(secs % 60).padStart(2, "0");
     return `${m}:${s}`;
+  }
+
+  function getSupportedAudioMimeType() {
+    if (typeof MediaRecorder === "undefined" || typeof MediaRecorder.isTypeSupported !== "function") {
+      return "";
+    }
+    const candidates = [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/ogg;codecs=opus",
+      "audio/mp4",
+      "audio/aac",
+      "audio/wav"
+    ];
+    for (const candidate of candidates) {
+      try {
+        if (MediaRecorder.isTypeSupported(candidate)) {
+          return candidate;
+        }
+      } catch (e) {
+        // Safe check for restrictive browser environments
+      }
+    }
+    return "";
   }
 
   function stopChatRecordingCleanup() {
@@ -1894,8 +1919,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     chatRecordingSeconds = 0;
     if (chatVoiceTimer) chatVoiceTimer.textContent = "00:00";
+    const fullTimer = document.getElementById("fullChatVoiceTimer");
+    if (fullTimer) fullTimer.textContent = "00:00";
+
     if (chatVoiceRecordingBar) chatVoiceRecordingBar.classList.add("hidden");
+    const fullVoiceBar = document.getElementById("fullChatVoiceBar");
+    if (fullVoiceBar) fullVoiceBar.classList.add("hidden");
+
     if (chatVoiceRecordBtn) chatVoiceRecordBtn.classList.remove("text-rose-600", "animate-pulse");
+    const fullVoiceBtn = document.getElementById("fullChatVoiceRecordBtn");
+    if (fullVoiceBtn) fullVoiceBtn.classList.remove("text-rose-600", "animate-pulse");
   }
 
   if (chatVoiceRecordBtn) {
@@ -1909,18 +1942,62 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // Step 1: Request Microphone Access with explicit permission error handling
+      let stream;
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        chatAudioChunks = [];
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (mediaErr) {
+        console.error("Microphone device/permission error:", mediaErr);
+        if (mediaErr.name === "NotAllowedError" || mediaErr.name === "PermissionDeniedError") {
+          showToast("Microphone access was denied. Please allow microphone permissions in your browser.", "error");
+        } else if (mediaErr.name === "NotFoundError" || mediaErr.name === "DevicesNotFoundError") {
+          showToast("No microphone device was detected on your system.", "error");
+        } else if (mediaErr.name === "NotReadableError" || mediaErr.name === "TrackStartError") {
+          showToast("Microphone is currently in use or cannot be accessed by this browser.", "error");
+        } else if (mediaErr.name === "OverconstrainedError") {
+          showToast("Microphone hardware constraints could not be satisfied.", "error");
+        } else {
+          showToast("Microphone unavailable: " + (mediaErr.message || mediaErr.name || mediaErr), "error");
+        }
+        return;
+      }
 
+      // Step 2: Safe MediaRecorder Initialization with detected MIME type and graceful fallbacks
+      try {
+        chatAudioChunks = [];
+        const detectedMime = getSupportedAudioMimeType();
         const recOptions = { audioBitsPerSecond: 32000 };
-        if (mimeType) recOptions.mimeType = mimeType;
-        chatMediaRecorder = new MediaRecorder(stream, recOptions);
+        if (detectedMime) {
+          recOptions.mimeType = detectedMime;
+        }
+
+        try {
+          chatMediaRecorder = detectedMime
+            ? new MediaRecorder(stream, recOptions)
+            : new MediaRecorder(stream);
+        } catch (optionsErr) {
+          console.warn("MediaRecorder creation with custom options failed, attempting fallback:", optionsErr);
+          try {
+            chatMediaRecorder = detectedMime
+              ? new MediaRecorder(stream, { mimeType: detectedMime })
+              : new MediaRecorder(stream);
+          } catch (mimeErr) {
+            chatMediaRecorder = new MediaRecorder(stream);
+          }
+        }
+
+        chatActiveMimeType = (chatMediaRecorder && chatMediaRecorder.mimeType) || detectedMime || "";
 
         chatMediaRecorder.ondataavailable = (e) => {
           if (e.data && e.data.size > 0) {
             chatAudioChunks.push(e.data);
           }
+        };
+
+        chatMediaRecorder.onerror = (e) => {
+          console.error("MediaRecorder runtime error:", e);
+          showToast("Microphone recording encountered an error.", "error");
+          stopChatRecordingCleanup();
         };
 
         chatMediaRecorder.onstart = () => {
@@ -1948,9 +2025,12 @@ document.addEventListener("DOMContentLoaded", () => {
         };
 
         chatMediaRecorder.start(250);
-      } catch (err) {
-        console.error("Microphone access error:", err);
-        showToast("Microphone access denied or unavailable: " + (err.message || err), "error");
+      } catch (recErr) {
+        console.error("MediaRecorder initialization error:", recErr);
+        if (stream) {
+          stream.getTracks().forEach(t => t.stop());
+        }
+        showToast("Audio recorder initialization failed: " + (recErr.message || recErr), "error");
       }
     });
   }
@@ -1965,10 +2045,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     chatAudioChunks = [];
     stopChatRecordingCleanup();
-    const fullVoiceBar = document.getElementById("fullChatVoiceBar");
-    if (fullVoiceBar) fullVoiceBar.classList.add("hidden");
-    const fullVoiceBtn = document.getElementById("fullChatVoiceRecordBtn");
-    if (fullVoiceBtn) fullVoiceBtn.classList.remove("text-rose-600", "animate-pulse");
     showToast("Voice recording cancelled.", "info");
   }
 
@@ -1991,18 +2067,24 @@ document.addEventListener("DOMContentLoaded", () => {
         chatMediaRecorder.stream.getTracks().forEach(t => t.stop());
       }
 
-      const blobType = chatMediaRecorder.mimeType || "audio/webm";
-      const audioBlob = new Blob(chatAudioChunks, { type: blobType });
+      const recordedMime = (chatMediaRecorder && chatMediaRecorder.mimeType) || chatActiveMimeType || "audio/webm";
+      const cleanMime = recordedMime.split(";")[0].trim() || "audio/webm";
+      const audioBlob = new Blob(chatAudioChunks, { type: cleanMime });
       stopChatRecordingCleanup();
-      const fullVoiceBar = document.getElementById("fullChatVoiceBar");
-      if (fullVoiceBar) fullVoiceBar.classList.add("hidden");
-      const fullVoiceBtn = document.getElementById("fullChatVoiceRecordBtn");
-      if (fullVoiceBtn) fullVoiceBtn.classList.remove("text-rose-600", "animate-pulse");
 
       if (audioBlob.size < 100) {
         showToast("Recording was too short or empty.", "error");
         return;
       }
+
+      let extension = "webm";
+      if (cleanMime.includes("webm")) extension = "webm";
+      else if (cleanMime.includes("mp4") || cleanMime.includes("m4a")) extension = "mp4";
+      else if (cleanMime.includes("ogg") || cleanMime.includes("opus")) extension = "ogg";
+      else if (cleanMime.includes("wav")) extension = "wav";
+      else if (cleanMime.includes("aac")) extension = "aac";
+
+      const filename = `voice_input.${extension}`;
 
       showToast("Transcribing speech with AI audio engine...", "info");
       try {
@@ -2010,11 +2092,18 @@ document.addEventListener("DOMContentLoaded", () => {
         let transcriptText = "";
 
         if (scannerInstance && typeof scannerInstance.transcribeAudio === "function") {
-          const res = await scannerInstance.transcribeAudio(audioBlob, "ta-IN");
+          let filePayload;
+          try {
+            filePayload = new File([audioBlob], filename, { type: cleanMime });
+          } catch (fErr) {
+            filePayload = audioBlob;
+            filePayload.name = filename;
+          }
+          const res = await scannerInstance.transcribeAudio(filePayload, "ta-IN");
           transcriptText = (res && (res.transcription || res.text || res.transcript)) || "";
         } else {
           const formData = new FormData();
-          formData.append("audio", audioBlob, "voice_input.webm");
+          formData.append("audio", audioBlob, filename);
           formData.append("language", "ta-IN");
           const res = await fetch(`${getApiBase()}/transcribe`, {
             method: "POST",

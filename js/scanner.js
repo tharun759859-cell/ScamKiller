@@ -137,7 +137,16 @@ class ScamBreakerScanner {
       }
     } else {
       formData = new FormData();
-      const filename = (fileOrBlob && fileOrBlob.name) ? fileOrBlob.name : "recording.webm";
+      let filename = (fileOrBlob && fileOrBlob.name) ? fileOrBlob.name : "";
+      if (!filename) {
+        const mime = (fileOrBlob && fileOrBlob.type) ? String(fileOrBlob.type).toLowerCase() : "";
+        if (mime.includes("webm")) filename = "recording.webm";
+        else if (mime.includes("mp4") || mime.includes("m4a")) filename = "recording.mp4";
+        else if (mime.includes("ogg") || mime.includes("opus")) filename = "recording.ogg";
+        else if (mime.includes("wav")) filename = "recording.wav";
+        else if (mime.includes("aac")) filename = "recording.aac";
+        else filename = "recording.webm";
+      }
       formData.append("audio", fileOrBlob, filename);
       formData.append("language", language);
     }
