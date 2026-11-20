@@ -394,3 +394,19 @@ audio::-webkit-media-controls-panel {
   border-left: 4px solid #e11d48;
 }
 
+
+/* Interactive Checklist check state */
+.recovery-action-check:checked + label span:first-child {
+  color: #059669;
+}
+.recovery-action-check:checked + label {
+  color: #64748b;
+}
+
+/* Category filter buttons active animation */
+.trust-cat-filter, .recovery-cat-pill {
+  transition: all 0.15s ease-in-out;
+}
+.trust-cat-filter:hover, .recovery-cat-pill:hover {
+  transform: translateY(-1px);
+}

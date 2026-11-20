@@ -150,12 +150,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // ================================================================
   const titleMap = {
     overview: "Security Overview",
-    "scan-history": "Scan History & Audit Log",
-    "scam-trends": "Scam Radar & World Intelligence",
+    "recovery-assistant": "Incident Recovery Playbooks",
+    "verification-assistant": "Trust Verification & Multi-Vector Inspector",
     "community-intel": "Community Threat Database",
-    "verification-assistant": "Trust Verification & Directory",
-    "recovery-assistant": "Scam Recovery Assistant",
     "ai-chat": "AI Advisory Assistant",
+    "scan-history": "Scan History & Audit Log",
+    "privacy-policy": "Privacy Safeguards & Policy",
     settings: "System & Privacy Settings"
   };
 
@@ -197,7 +197,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // View-specific lazy initialization
     if (viewId === "scan-history") loadScanHistory();
-    if (viewId === "scam-trends") loadScamTrends();
     if (viewId === "community-intel") loadCommunityIntelligence();
     if (viewId === "verification-assistant") initTrustVerificationView();
     if (viewId === "recovery-assistant") loadRecoveryAssistant();
@@ -443,11 +442,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // 5. ANALYZE WORKFLOW & INTELLIGENCE SCANNER VISUAL
   // ================================================================
   const statusTickerMessages = [
-    "Normalizing textual input & linguistic tokens...",
-    "Scanning brand impersonation & authority spoof signatures...",
-    "Evaluating urgency, financial lures & credential traps...",
-    "Cross-referencing verified official domains & CIRT feeds...",
-    "Synthesizing explainable intelligence report..."
+    "Deconstructing payload tokens & MIME encoding...",
+    "Verifying cryptographic signatures & DLT SMS sender headers...",
+    "Analyzing domain age, entropy, WHOIS heuristics & TLD risk...",
+    "Cross-referencing CIRT authority feeds & community fraud clusters...",
+    "Evaluating social engineering urgency & credential extraction cues...",
+    "Synthesizing forensic intelligence & explainable safety report..."
   ];
 
   if (analyzeBtn) {
@@ -642,6 +642,16 @@ document.addEventListener("DOMContentLoaded", () => {
         li.innerHTML = `<span class="font-bold text-emerald-700 font-mono text-xs mt-0.5 shrink-0">${i + 1}.</span><span>${escapeHtml(step)}</span>`;
         inlineNextStepsList.appendChild(li);
       });
+    }
+
+    // Toggle Section 6 Avoid List: visible only for suspicious or caution; hidden for safe
+    const avoidSection = document.getElementById("inlineAvoidSection");
+    if (avoidSection) {
+      if (riskLevel === "safe") {
+        avoidSection.classList.add("hidden");
+      } else {
+        avoidSection.classList.remove("hidden");
+      }
     }
 
     // Community Match Alert (if present)
@@ -948,14 +958,39 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // ================================================================
+  // 6. UPGRADED TRUST VERIFICATION & MULTI-VECTOR INSPECTOR
+  // ================================================================
+  let currentTrustCategory = "all";
+
   function initTrustVerificationView() {
-    renderFullTrustDirectory();
+    renderFullTrustDirectory("", currentTrustCategory);
+
+    // Setup Category Tabs
+    const catBar = document.getElementById("trustCategoryFilterBar");
+    if (catBar) {
+      const catBtns = catBar.querySelectorAll(".trust-cat-filter");
+      catBtns.forEach(btn => {
+        btn.onclick = () => {
+          catBtns.forEach(b => {
+            b.classList.remove("active", "bg-emerald-100", "text-emerald-800", "border-emerald-300");
+            b.classList.add("bg-slate-100", "text-slate-700", "border-slate-200");
+          });
+          btn.classList.add("active", "bg-emerald-100", "text-emerald-800", "border-emerald-300");
+          btn.classList.remove("bg-slate-100", "text-slate-700", "border-slate-200");
+          currentTrustCategory = btn.getAttribute("data-cat") || "all";
+          const searchInput = document.getElementById("verificationSearchInput");
+          const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
+          renderFullTrustDirectory(query, currentTrustCategory);
+        };
+      });
+    }
 
     const searchInput = document.getElementById("verificationSearchInput");
     if (searchInput) {
       searchInput.oninput = () => {
         const query = searchInput.value.toLowerCase().trim();
-        renderFullTrustDirectory(query);
+        renderFullTrustDirectory(query, currentTrustCategory);
       };
     }
 
@@ -973,7 +1008,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function renderFullTrustDirectory(filterQuery = "") {
+  function renderFullTrustDirectory(filterQuery = "", categoryFilter = "all") {
     const grid = document.getElementById("verificationDirectoryGrid");
     if (!grid) return;
 
@@ -981,19 +1016,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const directory = dataStore.trustDirectory || [];
     grid.innerHTML = "";
 
-    const filtered = filterQuery
-      ? directory.filter(item =>
-          item.name.toLowerCase().includes(filterQuery) ||
-          item.domain.toLowerCase().includes(filterQuery) ||
-          (item.smsHeader && item.smsHeader.toLowerCase().includes(filterQuery)) ||
-          item.category.toLowerCase().includes(filterQuery)
-        )
-      : directory;
+    const filtered = directory.filter(item => {
+      const matchesCat = categoryFilter === "all" ||
+        (item.category && item.category.toLowerCase().includes(categoryFilter.toLowerCase())) ||
+        (categoryFilter === "Government" && (item.category === "Government & Regulatory" || item.category === "Law Enforcement"));
+
+      if (!matchesCat) return false;
+
+      if (!filterQuery) return true;
+      const q = filterQuery.toLowerCase();
+      return item.name.toLowerCase().includes(q) ||
+        item.domain.toLowerCase().includes(q) ||
+        (item.smsHeader && item.smsHeader.toLowerCase().includes(q)) ||
+        (item.rule && item.rule.toLowerCase().includes(q)) ||
+        item.category.toLowerCase().includes(q);
+    });
 
     if (filtered.length === 0) {
       grid.innerHTML = `
-        <div class="col-span-2 p-6 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center text-xs text-slate-400">
-          No registered institutions match "${escapeHtml(filterQuery)}". Try searching by bank name, domain, or SMS header.
+        <div class="col-span-1 sm:col-span-2 p-6 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center text-xs text-slate-400">
+          No certified institutions match your search query or filter. Try searching by bank name, domain, or SMS header.
         </div>
       `;
       return;
@@ -1004,15 +1046,20 @@ document.addEventListener("DOMContentLoaded", () => {
       card.className = "p-4 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-emerald-300 transition-all space-y-2.5 text-xs shadow-sm";
       card.innerHTML = `
         <div class="flex items-center justify-between">
-          <span class="font-bold text-slate-900 text-sm">${escapeHtml(item.name)}</span>
-          <span class="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">${escapeHtml(item.status)}</span>
+          <div class="flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-[10px] uppercase font-mono">
+              ${escapeHtml(item.name.substring(0, 2))}
+            </span>
+            <span class="font-bold text-slate-900 text-sm">${escapeHtml(item.name)}</span>
+          </div>
+          <span class="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">${escapeHtml(item.status || "VERIFIED")}</span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
           <div><span class="text-slate-400 block uppercase text-[9px]">Official Portal:</span><span class="font-mono font-semibold text-emerald-700">${escapeHtml(item.domain)}</span></div>
           <div><span class="text-slate-400 block uppercase text-[9px]">Helpline:</span><span class="font-mono text-slate-800">${escapeHtml(item.helpline)}</span></div>
         </div>
-        ${item.smsHeader ? `<div class="text-[11px]"><span class="text-slate-400 block uppercase text-[9px]">TRAI SMS Headers:</span><span class="font-mono text-slate-700 font-semibold">${escapeHtml(item.smsHeader)}</span></div>` : ""}
-        <p class="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-200">${escapeHtml(item.rule)}</p>
+        ${item.smsHeader ? `<div class="text-[11px]"><span class="text-slate-400 block uppercase text-[9px]">Registered DLT SMS Headers:</span><span class="font-mono text-slate-700 font-semibold">${escapeHtml(item.smsHeader)}</span></div>` : ""}
+        <p class="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-200 leading-relaxed">${escapeHtml(item.rule)}</p>
         <span class="text-[10px] text-slate-400 font-mono block">Citation: ${escapeHtml(item.citation)}</span>
       `;
       grid.appendChild(card);
@@ -1022,17 +1069,21 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleLiveTrustCheck() {
     const inputEl = document.getElementById("trustVerifierInput");
     const resultCard = document.getElementById("trustVerifierResultCard");
+    const resultIconWrap = document.getElementById("trustResultIconWrap");
     const resultIcon = document.getElementById("trustResultIcon");
     const resultTitle = document.getElementById("trustResultTitle");
+    const resultTierLabel = document.getElementById("trustResultTierLabel");
     const resultBadge = document.getElementById("trustResultBadge");
     const resultEntity = document.getElementById("trustResultEntity");
     const resultList = document.getElementById("trustResultEvidenceList");
     const resultAdvice = document.getElementById("trustResultAdvice");
+    const anatomyBox = document.getElementById("trustUrlAnatomyBox");
+    const anatomyDetails = document.getElementById("trustUrlAnatomyDetails");
 
     if (!inputEl || !resultCard) return;
     const rawVal = inputEl.value.trim();
     if (!rawVal) {
-      showToast("Please enter a domain, SMS header, or phone number to verify.", "error");
+      showToast("Please enter an identifier (domain, SMS header, or phone number) to inspect.", "error");
       return;
     }
 
@@ -1040,167 +1091,505 @@ document.addEventListener("DOMContentLoaded", () => {
     const directory = dataStore.trustDirectory || [];
 
     const cleanVal = rawVal.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
-    let verdict = "caution";
+    const isUrlLike = rawVal.includes(".") || rawVal.startsWith("http://") || rawVal.startsWith("https://") || rawVal.includes("/");
+
+    // 4-Tier structured evaluation:
+    // Tier 1: VERIFIED OFFICIAL (Emerald)
+    // Tier 2: HIGH RISK DETECTED (Rose)
+    // Tier 3: UNVERIFIED / INDEPENDENT (Slate)
+    // Tier 4: MISSING EVIDENCE / INSUFFICIENT (Amber)
+    let tier = 3;
+    let verdict = "unverified";
     let title = "Unverified Identifier";
-    let entityName = "No official match in regulatory DLT / RBI registries";
+    let tierLabel = "Tier 3: Unverified / Third-Party Counterparty";
+    let entityName = "Not listed in certified banking or regulatory DLT directory";
     let evidence = [];
-    let advice = "Exercise caution. Do not share OTPs, passwords, or personal banking credentials.";
-    let badgeClass = "bg-amber-100 text-amber-900 border border-amber-300";
+    let advice = "Exercise caution. Do not share OTPs, PINs, or NetBanking passwords with this sender.";
+    let badgeClass = "bg-slate-100 text-slate-800 border border-slate-300";
     let iconName = "help";
+    let iconBg = "bg-slate-100 text-slate-700";
 
-    // 1. Check Directory Match
-    const matched = directory.find(d => {
-      const dDom = d.domain.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
-      const dHeaders = (d.smsHeader || "").toLowerCase().split(",").map(s => s.trim());
-      const dName = d.name.toLowerCase();
-      return cleanVal === dDom ||
-             cleanVal.endsWith("." + dDom) ||
-             dHeaders.some(h => cleanVal === h || cleanVal.endsWith("-" + h) || cleanVal.endsWith(h)) ||
-             cleanVal.includes(dName);
-    });
-
-    if (matched) {
-      verdict = "verified";
-      title = `Official Registry Match: ${matched.name}`;
-      entityName = `Registered Authority: ${matched.citation}`;
-      badgeClass = "bg-emerald-100 text-emerald-800 border border-emerald-300";
-      iconName = "verified";
-      evidence.push(`Domain or SMS header matches verified official profile for ${matched.name}.`);
-      evidence.push(`Official registered portal: ${matched.domain}`);
-      evidence.push(`Official contact / helpline: ${matched.helpline}`);
-      evidence.push(`Security Rule: ${matched.rule}`);
-      advice = "This identifier matches an authentic institution directory entry. Still ensure you are on the exact domain before entering credentials.";
-    } else if (cleanVal.endsWith(".gov.in") || cleanVal.endsWith(".nic.in")) {
-      verdict = "verified";
-      title = "Official Government Domain (.gov.in / .nic.in)";
-      entityName = "National Informatics Centre (NIC) / Government of India Registered";
-      badgeClass = "bg-emerald-100 text-emerald-800 border border-emerald-300";
-      iconName = "verified";
-      evidence.push("Domain uses official reserved government TLD (.gov.in or .nic.in).");
-      evidence.push("Restricted top-level domain allocated exclusively to authorized ministries and state agencies.");
-      advice = "Legitimate official government web portal. Always verify HTTPS certificate in the browser address bar.";
-    } else if (/\.(top|xyz|club|work|buzz|click|online|shop|live|cfd|icu|rest|sbs)$/i.test(cleanVal)) {
-      verdict = "suspicious";
-      title = "High-Risk Cheap / Ephemeral Domain Extension";
-      entityName = "Potentially Malicious Ephemeral Host";
-      badgeClass = "bg-rose-100 text-rose-800 border border-rose-300";
-      iconName = "gpp_bad";
-      evidence.push(`Domain uses high-risk cheap TLD (${cleanVal.split('.').pop()}) heavily favored by phishing syndicates.`);
-      evidence.push("Legitimate banks and postal services in India never host transactional portals on cheap generic TLDs.");
-      evidence.push("No corporate entity verification found in TRAI / RBI database.");
-      advice = "Do NOT visit this link or input any personal or financial information. Immediately block the sender.";
-    } else if (/^(\+?91)?[6-9]\d{9}$/.test(rawVal.replace(/[\s-]/g, ""))) {
-      verdict = "suspicious";
-      title = "Personal 10-Digit Mobile Number (Not an Official Bank Header)";
-      entityName = "Unregistered Individual SIM";
-      badgeClass = "bg-rose-100 text-rose-800 border border-rose-300";
-      iconName = "warning";
-      evidence.push("Under TRAI regulations, commercial banks and utilities must send official SMS via registered 6-character alpha headers (e.g. SBIPAY, HDFCBK, AXISBK).");
-      evidence.push("Legitimate financial institutions NEVER send urgent KYC suspension alerts from standard 10-digit mobile numbers.");
-      evidence.push("High probability of a spoofed sender or burner SIM card used by scammers.");
-      advice = "Do NOT click links sent by this number. Report the number on the Chakshu portal (sancharsaathi.gov.in).";
-    } else {
-      verdict = "caution";
-      title = "Unrecognized Identifier";
-      entityName = "Not listed in certified banking or regulatory directory";
+    // Tier 4 Check: Incomplete input (< 3 chars or ambiguous)
+    if (rawVal.length < 3) {
+      tier = 4;
+      verdict = "missing_evidence";
+      title = "Insufficient Identifier Length";
+      tierLabel = "Tier 4: Missing Evidence / Ambiguous Query";
+      entityName = "Input query is too short for reliable deterministic verification";
       badgeClass = "bg-amber-100 text-amber-900 border border-amber-300";
-      iconName = "shield";
-      evidence.push("No direct record found in current verified banking, postal, or government directories.");
-      evidence.push("Entity could be a third-party commercial service or an unverified sender.");
-      advice = "Verify directly with the organization using their official published customer care number from your passbook or physical card.";
+      iconName = "emergency";
+      iconBg = "bg-amber-100 text-amber-800";
+      evidence.push("Identifier contains fewer than 3 characters.");
+      evidence.push("DLT SMS sender headers in India require a minimum 6-character alphanumeric sequence (e.g. SBIPAY, AXISBK).");
+      evidence.push("Domain names require a fully qualified domain extension (e.g. .com, .in, .sbi).");
+      advice = "Please provide the complete URL (e.g. onlinesbi.sbi), full 6-character SMS header, or full 10-digit mobile number.";
+    } else {
+      // Tier 1 Check: Directory Match
+      const matched = directory.find(d => {
+        const dDom = d.domain.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim();
+        const dHeaders = (d.smsHeader || "").toLowerCase().split(",").map(s => s.trim());
+        const dName = d.name.toLowerCase();
+        return cleanVal === dDom ||
+               cleanVal.endsWith("." + dDom) ||
+               dHeaders.some(h => cleanVal === h || cleanVal.endsWith("-" + h) || cleanVal.endsWith(h)) ||
+               cleanVal.includes(dName);
+      });
+
+      if (matched) {
+        tier = 1;
+        verdict = "verified";
+        title = `Official Registry Match: ${matched.name}`;
+        tierLabel = "Tier 1: Certified Official Authority";
+        entityName = `Registered Authority: ${matched.citation}`;
+        badgeClass = "bg-emerald-100 text-emerald-800 border border-emerald-300";
+        iconName = "verified";
+        iconBg = "bg-emerald-100 text-emerald-700";
+        evidence.push(`Identifier matches certified directory entry for ${matched.name}.`);
+        evidence.push(`Official registered portal: ${matched.domain}`);
+        evidence.push(`Official emergency helpline: ${matched.helpline}`);
+        if (matched.smsHeader) evidence.push(`Registered TRAI DLT SMS Header(s): ${matched.smsHeader}`);
+        evidence.push(`Security Rule: ${matched.rule}`);
+        advice = "Matches authentic directory profile. Always verify the full URL in your browser address bar before entering credentials.";
+      } else if (cleanVal.endsWith(".gov.in") || cleanVal.endsWith(".nic.in")) {
+        tier = 1;
+        verdict = "verified";
+        title = "Official Government Domain (.gov.in / .nic.in)";
+        tierLabel = "Tier 1: Certified Sovereign Ministry / Agency";
+        entityName = "National Informatics Centre (NIC) / Government of India Registered";
+        badgeClass = "bg-emerald-100 text-emerald-800 border border-emerald-300";
+        iconName = "verified";
+        iconBg = "bg-emerald-100 text-emerald-700";
+        evidence.push("Domain uses reserved sovereign government TLD (.gov.in or .nic.in).");
+        evidence.push("Restricted top-level domain allocated exclusively to authorized ministries, departments, and public authorities.");
+        advice = "Authentic official government web portal. Always check the browser address bar for correct spelling.";
+      }
+      // Tier 2 Check: High Risk Ephemeral TLDs or Unregistered 10-Digit Mobile Numbers claiming to be banks
+      else if (/\.(top|xyz|club|work|buzz|click|online|shop|live|cfd|icu|rest|sbs|store|site|vip)$/i.test(cleanVal)) {
+        tier = 2;
+        verdict = "suspicious";
+        title = "High-Risk Ephemeral Domain Extension (.top, .xyz, .club)";
+        tierLabel = "Tier 2: High Risk Threat Pattern";
+        entityName = "Ephemeral Domain Frequently Utilized in Phishing Campaigns";
+        badgeClass = "bg-rose-100 text-rose-800 border border-rose-300";
+        iconName = "gpp_bad";
+        iconBg = "bg-rose-100 text-rose-700";
+        evidence.push(`Domain utilizes high-risk cheap generic TLD (${cleanVal.split('.').pop()}) heavily favored by automated phishing syndicates.`);
+        evidence.push("Legitimate Indian financial institutions, utilities, and postal services NEVER host transactional services on cheap ephemeral TLDs.");
+        evidence.push("No corporate entity registration found in TRAI or RBI official registry.");
+        advice = "Do NOT click, submit credentials, or open downloads from this domain. Immediately block the sender and report on Chakshu.";
+      } else if (/^(\+?91)?[6-9]\d{9}$/.test(rawVal.replace(/[\s-]/g, ""))) {
+        tier = 2;
+        verdict = "suspicious";
+        title = "Personal 10-Digit Mobile Number (Not an Official Bank Header)";
+        tierLabel = "Tier 2: TRAI Regulation Violation / High Risk";
+        entityName = "Unregistered Individual SIM Card";
+        badgeClass = "bg-rose-100 text-rose-800 border border-rose-300";
+        iconName = "warning";
+        iconBg = "bg-rose-100 text-rose-700";
+        evidence.push("Under TRAI DLT regulations, commercial banks, telecom operators, and utilities MUST send SMS alerts via registered 6-character alpha headers (e.g. SBIPAY, HDFCBK).");
+        evidence.push("Legitimate financial institutions NEVER send urgent KYC update, account block, or lottery alerts from standard personal 10-digit mobile numbers.");
+        evidence.push("High probability of a spoofed sender or burner SIM card used by scam syndicates.");
+        advice = "Do NOT call this number back or click links sent by it. Report this number immediately on the DoT Chakshu portal (sancharsaathi.gov.in).";
+      } else if (cleanVal.includes("kyc") || cleanVal.includes("reward") || cleanVal.includes("claim") || cleanVal.includes("apk") || cleanVal.includes("ebill")) {
+        tier = 2;
+        verdict = "suspicious";
+        title = "Suspicious Brand Impersonation / Urgency Keywords Detected";
+        tierLabel = "Tier 2: High Risk Brand Impersonation";
+        entityName = "Unauthenticated Domain Exhibiting Phishing Signatures";
+        badgeClass = "bg-rose-100 text-rose-800 border border-rose-300";
+        iconName = "gpp_bad";
+        iconBg = "bg-rose-100 text-rose-700";
+        evidence.push("Identifier contains high-frequency fraud keywords (e.g. kyc, reward, claim, apk, ebill).");
+        evidence.push("No cryptographic registration or DLT match found for this entity.");
+        advice = "Extreme caution: Fraudsters construct domains with brand words to deceive users. Do not disclose financial credentials.";
+      }
+      // Tier 3: Unverified / Unknown
+      else {
+        tier = 3;
+        verdict = "unverified";
+        title = "Unverified Identifier";
+        tierLabel = "Tier 3: Unverified / Third-Party Counterparty";
+        entityName = "Not listed in certified banking or regulatory DLT directory";
+        badgeClass = "bg-slate-100 text-slate-800 border border-slate-300";
+        iconName = "help";
+        iconBg = "bg-slate-100 text-slate-700";
+        evidence.push("No direct record found in verified banking, postal, or government directories.");
+        evidence.push("Identifier appears to be an unindexed private business domain or third-party service.");
+        advice = "Verify independently using official printed paperwork, bank passbooks, or authentic in-app support channels before sharing sensitive information.";
+      }
     }
 
+    // Render 4-tier Result Card
     resultCard.classList.remove("hidden");
-    if (resultIcon) {
-      resultIcon.textContent = iconName;
-      resultIcon.className = `material-symbols-outlined text-lg ${verdict === 'verified' ? 'text-emerald-600' : verdict === 'suspicious' ? 'text-rose-600' : 'text-amber-600'}`;
-    }
+    if (resultIconWrap) resultIconWrap.className = `w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`;
+    if (resultIcon) resultIcon.textContent = iconName;
     if (resultTitle) resultTitle.textContent = title;
+    if (resultTierLabel) resultTierLabel.textContent = tierLabel;
     if (resultBadge) {
-      resultBadge.className = `text-[10px] font-mono px-2.5 py-0.5 rounded-full font-bold uppercase ${badgeClass}`;
-      resultBadge.textContent = verdict === "verified" ? "VERIFIED OFFICIAL" : verdict === "suspicious" ? "HIGH RISK DETECTED" : "UNVERIFIED / CAUTION";
+      resultBadge.className = `text-[10px] font-mono px-3 py-1 rounded-full font-bold uppercase ${badgeClass}`;
+      resultBadge.textContent = verdict === "verified" ? "TIER 1 • VERIFIED OFFICIAL" :
+                                verdict === "suspicious" ? "TIER 2 • HIGH RISK DETECTED" :
+                                verdict === "missing_evidence" ? "TIER 4 • MISSING EVIDENCE" :
+                                "TIER 3 • UNVERIFIED";
     }
     if (resultEntity) resultEntity.textContent = entityName;
     if (resultList) {
       resultList.innerHTML = evidence.map(e => `<li>${escapeHtml(e)}</li>`).join("");
     }
     if (resultAdvice) resultAdvice.textContent = advice;
+
+    // URL Anatomy Diagnostics Box
+    if (anatomyBox && anatomyDetails) {
+      if (isUrlLike) {
+        anatomyBox.classList.remove("hidden");
+        const hasHttps = rawVal.startsWith("https://");
+        const hasHttp = rawVal.startsWith("http://");
+        const protocol = hasHttps ? "https://" : (hasHttp ? "http://" : "No protocol specified (insecure default)");
+        const parts = cleanVal.split(".");
+        const tld = parts.length > 1 ? parts[parts.length - 1] : "N/A";
+        const rootDomain = parts.length >= 2 ? parts.slice(-2).join(".") : cleanVal;
+
+        anatomyDetails.innerHTML = `
+          <div><span class="text-slate-400">Protocol:</span> <span class="${hasHttps ? 'text-emerald-400 font-bold' : 'text-amber-400 font-bold'}">${escapeHtml(protocol)}</span> (${hasHttps ? 'Encrypted in transit' : 'Unencrypted plaintext risk'})</div>
+          <div><span class="text-slate-400">Hostname / Domain:</span> <span class="text-white font-bold">${escapeHtml(cleanVal)}</span></div>
+          <div><span class="text-slate-400">Root Domain:</span> <span class="text-emerald-300 font-bold">${escapeHtml(rootDomain)}</span></div>
+          <div><span class="text-slate-400">Top-Level Domain (TLD):</span> <span class="text-amber-300 font-bold">.${escapeHtml(tld)}</span></div>
+        `;
+      } else {
+        anatomyBox.classList.add("hidden");
+      }
+    }
   }
 
-  function loadRecoveryAssistant(defaultSituation = "money_sent") {
-    const situationCards = document.querySelectorAll(".recovery-situation-card[data-situation]");
-    situationCards.forEach(card => {
-      card.onclick = () => {
-        situationCards.forEach(c => c.classList.remove("active"));
-        card.classList.add("active");
-        const sitKey = card.getAttribute("data-situation");
-        renderRecoverySituation(sitKey);
+  // ================================================================
+  // 7. UPGRADED INCIDENT RECOVERY ASSISTANT (17 PLAYBOOKS)
+  // ================================================================
+  let currentRecoveryCategory = "all";
+  let activePlaybookKey = "money_transferred";
+
+  function loadRecoveryAssistant(defaultSituation = "money_transferred") {
+    activePlaybookKey = defaultSituation;
+    const dataStore = window.SCAM_BREAKER_DATA || window.SCAM_KILLER_DATA || {};
+    const guidance = dataStore.recoveryGuidance || {};
+    const situations = guidance.situations || guidance.situationPlaybooks || {};
+
+    renderRecoveryScenarioGrid(situations, "", currentRecoveryCategory);
+
+    // Setup Category Filter Pills
+    const pillsContainer = document.getElementById("recoveryCategoryPills");
+    if (pillsContainer) {
+      const pills = pillsContainer.querySelectorAll(".recovery-cat-pill");
+      pills.forEach(pill => {
+        pill.onclick = () => {
+          pills.forEach(p => {
+            p.classList.remove("active", "bg-rose-100", "text-rose-800", "border-rose-300");
+            p.classList.add("bg-slate-100", "text-slate-700", "border-slate-200");
+          });
+          pill.classList.add("active", "bg-rose-100", "text-rose-800", "border-rose-300");
+          pill.classList.remove("bg-slate-100", "text-slate-700", "border-slate-200");
+          currentRecoveryCategory = pill.getAttribute("data-category") || "all";
+          const searchInput = document.getElementById("recoverySearchInput");
+          const query = searchInput ? searchInput.value.toLowerCase().trim() : "";
+          renderRecoveryScenarioGrid(situations, query, currentRecoveryCategory);
+        };
+      });
+    }
+
+    // Setup Search Input
+    const searchInput = document.getElementById("recoverySearchInput");
+    if (searchInput) {
+      searchInput.oninput = () => {
+        const query = searchInput.value.toLowerCase().trim();
+        renderRecoveryScenarioGrid(situations, query, currentRecoveryCategory);
       };
+    }
+
+    renderRecoverySituation(activePlaybookKey);
+  }
+
+  function renderRecoveryScenarioGrid(situations, query = "", category = "all") {
+    const grid = document.getElementById("recoverySituationGrid");
+    if (!grid) return;
+    grid.innerHTML = "";
+
+    // Deduplicate unique playbooks (ignore legacy alias keys)
+    const uniqueKeys = [
+      "money_transferred", "upi_fraud", "bank_compromise", "card_compromise",
+      "password_stolen", "email_compromise", "whatsapp_social_takeover",
+      "malicious_apk", "remote_access_fraud", "sim_swap", "identity_theft",
+      "shopping_fraud", "investment_fraud", "crypto_fraud", "sextortion_blackmail",
+      "phishing_link", "fake_support"
+    ];
+
+    const matchingKeys = uniqueKeys.filter(k => {
+      const p = situations[k];
+      if (!p) return false;
+
+      const matchesCat = category === "all" || p.category === category;
+      if (!matchesCat) return false;
+
+      if (!query) return true;
+      const q = query.toLowerCase();
+      return (p.title && p.title.toLowerCase().includes(q)) ||
+             (p.subtitle && p.subtitle.toLowerCase().includes(q)) ||
+             (p.categoryName && p.categoryName.toLowerCase().includes(q));
     });
 
-    renderRecoverySituation(defaultSituation);
+    if (matchingKeys.length === 0) {
+      grid.innerHTML = `
+        <div class="col-span-1 sm:col-span-2 lg:col-span-3 p-6 rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center text-xs text-slate-400">
+          No incident playbooks match "${escapeHtml(query)}". Try searching for "UPI", "Bank", "APK", or "Password".
+        </div>
+      `;
+      return;
+    }
+
+    matchingKeys.forEach(key => {
+      const p = situations[key];
+      const card = document.createElement("div");
+      const isActive = key === activePlaybookKey;
+      card.className = `recovery-situation-card p-3.5 rounded-xl border transition-all cursor-pointer ${
+        isActive ? 'active border-rose-400 bg-rose-50/60 shadow-sm' : 'border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300'
+      }`;
+      card.setAttribute("data-situation", key);
+      card.innerHTML = `
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-rose-600 text-lg">${escapeHtml(p.icon || 'shield')}</span>
+            <h4 class="font-bold text-xs text-slate-900">${escapeHtml(p.title)}</h4>
+          </div>
+          <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-200/70 text-slate-700 font-semibold">${escapeHtml(p.categoryName || 'Incident')}</span>
+        </div>
+        <p class="text-[11px] text-slate-600 leading-snug line-clamp-2">${escapeHtml(p.subtitle)}</p>
+      `;
+
+      card.onclick = () => {
+        grid.querySelectorAll(".recovery-situation-card").forEach(c => {
+          c.classList.remove("active", "border-rose-400", "bg-rose-50/60", "shadow-sm");
+          c.classList.add("border-slate-200", "bg-slate-50");
+        });
+        card.classList.add("active", "border-rose-400", "bg-rose-50/60", "shadow-sm");
+        card.classList.remove("border-slate-200", "bg-slate-50");
+        activePlaybookKey = key;
+        renderRecoverySituation(key);
+      };
+
+      grid.appendChild(card);
+    });
   }
 
   function renderRecoverySituation(situationKey) {
     const dataStore = window.SCAM_BREAKER_DATA || window.SCAM_KILLER_DATA || {};
     const guidance = dataStore.recoveryGuidance || {};
-    const situations = guidance.situations || {};
-    const sitData = situations[situationKey] || situations["money_sent"] || {
-      title: "Scam Incident Response",
-      urgency: "CRITICAL PRIORITY",
-      urgencyColor: "bg-rose-100 text-rose-800",
-      steps: [
-        "Immediately contact your bank's 24x7 fraud reporting desk to request an account/card freeze.",
-        "Dial 1930 to file an immediate complaint on the National Cybercrime Reporting Portal (NCRP).",
-        "Preserve transaction SMS, UTR reference numbers, and screenshots for legal evidence."
-      ]
-    };
+    const situations = guidance.situations || guidance.situationPlaybooks || {};
+    const sitData = situations[situationKey] || situations["money_transferred"] || situations["money_sent"] || {};
 
     const urgencyEl = document.getElementById("recoveryPlanUrgency");
+    const categoryBadgeEl = document.getElementById("recoveryPlanCategoryBadge");
     const titleEl = document.getElementById("recoveryPlanTitle");
-    const stepsListEl = document.getElementById("recoveryStepsList");
-    const helplinesGrid = document.getElementById("recoveryBankHelplinesGrid");
+    const subtitleEl = document.getElementById("recoveryPlanSubtitle");
+    const whatHappenedEl = document.getElementById("recoveryWhatHappened");
+    const compromisedAssetsEl = document.getElementById("recoveryCompromisedAssets");
+    const checklistContainer = document.getElementById("recoveryChecklistContainer");
+    const evidenceListEl = document.getElementById("recoveryEvidenceList");
+    const avoidListEl = document.getElementById("recoveryAvoidList");
+    const specificContactsGrid = document.getElementById("recoverySpecificContactsGrid");
+    const bankHelplinesGrid = document.getElementById("recoveryBankHelplinesGrid");
+    const paymentHelplinesGrid = document.getElementById("recoveryPaymentHelplinesGrid");
+    const followUpPlanEl = document.getElementById("recoveryFollowUpPlan");
+    const progressTextEl = document.getElementById("recoveryProgressText");
+    const progressBarEl = document.getElementById("recoveryProgressBar");
     const copyBtn = document.getElementById("copyRecoveryChecklistBtn");
 
     if (urgencyEl) {
       urgencyEl.textContent = sitData.urgency || "CRITICAL PRIORITY";
-      urgencyEl.className = `text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${sitData.urgencyColor || "bg-rose-100 text-rose-800"}`;
+      urgencyEl.className = `text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${sitData.urgencyClass || "bg-rose-100 text-rose-800"}`;
+    }
+    if (categoryBadgeEl) {
+      categoryBadgeEl.textContent = sitData.categoryName || "Incident Response";
     }
     if (titleEl) {
-      titleEl.textContent = `Action Plan: ${sitData.title}`;
+      titleEl.textContent = `Action Plan: ${sitData.title || "Incident Response"}`;
     }
-    if (stepsListEl) {
-      stepsListEl.innerHTML = (sitData.steps || []).map((step, idx) => `
-        <li class="flex items-start gap-2.5 p-2 rounded-lg bg-white border border-slate-200 shadow-2xs">
-          <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 font-mono font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">${idx + 1}</span>
-          <span class="leading-relaxed">${escapeHtml(step)}</span>
-        </li>
-      `).join("");
+    if (subtitleEl) {
+      subtitleEl.textContent = sitData.subtitle || "";
+    }
+    if (whatHappenedEl) {
+      whatHappenedEl.textContent = sitData.whatHappened || "Follow prioritized emergency containment instructions below.";
+    }
+    if (compromisedAssetsEl) {
+      compromisedAssetsEl.textContent = sitData.compromisedAssets || "Financial accounts, credentials, device access.";
     }
 
-    if (helplinesGrid && guidance.bankHelplines) {
-      helplinesGrid.innerHTML = guidance.bankHelplines.map(b => `
+    // Interactive Containment Checklist
+    const checklistItems = sitData.checklist || sitData.steps || [];
+    let completedSteps = new Set();
+
+    function updateProgress() {
+      const total = checklistItems.length;
+      const count = completedSteps.size;
+      const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+      if (progressTextEl) {
+        progressTextEl.textContent = `${count} of ${total} containment actions completed (${pct}%)`;
+      }
+      if (progressBarEl) {
+        progressBarEl.style.width = `${pct}%`;
+      }
+    }
+
+    if (checklistContainer) {
+      checklistContainer.innerHTML = checklistItems.map((step, idx) => `
+        <div class="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-200 shadow-2xs hover:border-emerald-300 transition-colors">
+          <input type="checkbox" class="recovery-action-check cursor-pointer accent-emerald-600 w-4 h-4 rounded mt-0.5 shrink-0" data-idx="${idx}" id="chk_step_${idx}">
+          <label for="chk_step_${idx}" class="text-xs text-slate-800 leading-relaxed cursor-pointer select-none flex-1">
+            <span class="font-bold text-slate-900 block mb-0.5">Step ${idx + 1}:</span>
+            ${escapeHtml(step)}
+          </label>
+        </div>
+      `).join("");
+
+      const checks = checklistContainer.querySelectorAll(".recovery-action-check");
+      checks.forEach(chk => {
+        chk.onchange = () => {
+          const idx = chk.getAttribute("data-idx");
+          if (chk.checked) {
+            completedSteps.add(idx);
+          } else {
+            completedSteps.delete(idx);
+          }
+          updateProgress();
+        };
+      });
+      updateProgress();
+    }
+
+    // Evidence to Preserve
+    if (evidenceListEl) {
+      const evList = sitData.evidence || [
+        "Transaction Reference Numbers (UTR / RRN / UPI ID)",
+        "Screenshots of conversations and fraudulent payment requests",
+        "Sender phone numbers or deceptive website URLs"
+      ];
+      evidenceListEl.innerHTML = evList.map(item => `<li>${escapeHtml(item)}</li>`).join("");
+    }
+
+    // What to Avoid
+    if (avoidListEl) {
+      const avList = sitData.whatToAvoid || [
+        "NEVER pay third-party 'recovery agents' or 'crypto recovery hackers' online.",
+        "Do not delete chat logs or SMS threads with scammers — they are primary evidence."
+      ];
+      avoidListEl.innerHTML = avList.map(item => `<li>${escapeHtml(item)}</li>`).join("");
+    }
+
+    // Specific Contacts Grid
+    if (specificContactsGrid) {
+      const contacts = sitData.contacts || [];
+      if (contacts.length === 0) {
+        specificContactsGrid.innerHTML = `
+          <div class="p-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-500">
+            Dial 1930 or report on <a href="https://cybercrime.gov.in" target="_blank" class="text-emerald-700 underline font-semibold">cybercrime.gov.in</a>.
+          </div>
+        `;
+      } else {
+        specificContactsGrid.innerHTML = contacts.map(c => `
+          <div class="p-3 rounded-xl bg-white border border-slate-200 text-xs space-y-1 shadow-2xs">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-900">${escapeHtml(c.entity)}</span>
+              <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">${escapeHtml(c.channel || 'Official')}</span>
+            </div>
+            <div class="text-[11px] font-mono text-emerald-700 font-bold">${escapeHtml(c.info)}</div>
+          </div>
+        `).join("");
+      }
+    }
+
+    // Bank Helplines Grid
+    if (bankHelplinesGrid && guidance.bankHelplines) {
+      bankHelplinesGrid.innerHTML = guidance.bankHelplines.map(b => `
         <div class="p-3 rounded-xl bg-white border border-slate-200 text-xs space-y-1.5 shadow-2xs">
           <div class="flex items-center justify-between">
             <span class="font-bold text-slate-900">${escapeHtml(b.name)}</span>
-            <span class="text-[9px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">24x7</span>
+            <span class="text-[9px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 font-bold">24x7 Direct</span>
           </div>
           <div class="text-[11px] text-slate-600 flex items-center gap-1">
             <span class="material-symbols-outlined text-xs text-rose-600">call</span>
-            <a href="tel:${escapeHtml(b.phone.replace(/\s+/g, ''))}" class="font-mono font-bold text-slate-800 hover:text-rose-600">${escapeHtml(b.phone)}</a>
+            <a href="tel:${escapeHtml(b.phone.replace(/[\s-]/g, ''))}" class="font-mono font-bold text-slate-800 hover:text-rose-600">${escapeHtml(b.phone)}</a>
           </div>
           <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(b.smsBlock)}</div>
         </div>
       `).join("");
     }
 
+    // Payment Helplines Grid
+    if (paymentHelplinesGrid && guidance.paymentHelplines) {
+      paymentHelplinesGrid.innerHTML = guidance.paymentHelplines.map(p => `
+        <div class="p-3 rounded-xl bg-white border border-slate-200 text-xs space-y-1 shadow-2xs">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-900">${escapeHtml(p.name)}</span>
+            <span class="text-[9px] font-mono text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200 font-bold">${escapeHtml(p.channel)}</span>
+          </div>
+          <div class="text-[11px] font-mono text-slate-800 font-bold">${escapeHtml(p.phone)}</div>
+          <div class="text-[10px] text-slate-500 leading-tight">${escapeHtml(p.rule)}</div>
+        </div>
+      `).join("");
+    }
+
+    // Follow-up Plan
+    if (followUpPlanEl) {
+      followUpPlanEl.textContent = sitData.followUpPlan || "Monitor credit reports and enable app-based 2FA across all financial services.";
+    }
+
+    // Copy Full Action Plan
     if (copyBtn) {
       copyBtn.onclick = () => {
-        const textToCopy = `SCAM BREAKER — EMERGENCY RECOVERY CHECKLIST\nSituation: ${sitData.title}\nUrgency: ${sitData.urgency}\n\nImmediate Action Steps:\n${(sitData.steps || []).map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\nNational Cybercrime Reporting:\n• Call 1930 (Immediate inter-bank fund lien freeze)\n• File online: https://cybercrime.gov.in\n• Keep UTR/transaction reference numbers handy\n\nSafety Notice: Law enforcement and SCAM BREAKER never charge any fee to recover money. Never pay third-party recovery scammers.`;
+        const checkListText = checklistItems.map((s, i) => {
+          const isDone = completedSteps.has(String(i));
+          return `[${isDone ? 'X' : ' '}] Step ${i + 1}: ${s}`;
+        }).join('\n');
+
+        const evText = (sitData.evidence || []).map(e => `• ${e}`).join('\n');
+        const avText = (sitData.whatToAvoid || []).map(a => `• ${a}`).join('\n');
+
+        const textToCopy = `================================================================
+SCAM BREAKER — INCIDENT RECOVERY ACTION PLAN
+================================================================
+Incident: ${sitData.title}
+Urgency: ${sitData.urgency}
+Category: ${sitData.categoryName || 'Fraud Incident'}
+
+IMPACT ASSESSMENT:
+${sitData.whatHappened || ''}
+Assets At Risk: ${sitData.compromisedAssets || ''}
+
+STEP-BY-STEP CONTAINMENT CHECKLIST:
+${checkListText}
+
+CRITICAL ACTIONS TO AVOID:
+${avText}
+
+REQUIRED EVIDENCE TO PRESERVE FOR POLICE / 1930 / NCRP:
+${evText}
+
+EMERGENCY REPORTING DESKS:
+• National Cybercrime Helpline: 1930 (Immediate inter-bank fund lien freeze)
+• National Cybercrime Reporting Portal: https://cybercrime.gov.in
+• DoT Sanchar Saathi (Chakshu): https://sancharsaathi.gov.in/sfc/
+• National Consumer Helpline: 1915
+
+POST-CONTAINMENT FOLLOW-UP:
+${sitData.followUpPlan || ''}
+
+SAFETY DISCLAIMER:
+Official police, RBI, and SCAM BREAKER never charge recovery fees.
+Never pay third-party "recovery hackers" or "funds retrieval agents".
+Generated by SCAM BREAKER (https://scambreaker.internal)
+================================================================`;
+
         navigator.clipboard.writeText(textToCopy).then(() => {
-          showToast("Action checklist copied to clipboard!", "success");
+          showToast("Full incident action plan copied to clipboard!", "success");
         }).catch(() => {
-          showToast("Could not copy checklist.", "error");
+          showToast("Could not copy plan to clipboard.", "error");
         });
       };
     }

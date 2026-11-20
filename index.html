@@ -56,9 +56,22 @@
       <a href="#" data-nav-target="overview" class="flex items-center gap-3 px-2 py-3 mb-5 group">
         <!-- Glowing Shield Logo Icon -->
         <div class="relative w-10 h-10 flex items-center justify-center shrink-0">
-          <svg class="w-10 h-10 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            <path d="m9 12 2 2 4-4" stroke-width="2.5" />
+          <svg class="w-10 h-10 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="shieldGradSidebar" x1="4" y1="2" x2="28" y2="30" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#34D399"/>
+                <stop offset="50%" stop-color="#10B981"/>
+                <stop offset="100%" stop-color="#047857"/>
+              </linearGradient>
+              <linearGradient id="coreGradSidebar" x1="16" y1="9" x2="16" y2="23" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#A7F3D0"/>
+                <stop offset="100%" stop-color="#34D399"/>
+              </linearGradient>
+            </defs>
+            <path d="M16 3L6 7.5V14.5C6 21.2 10.3 27.4 16 29C21.7 27.4 26 21.2 26 14.5V7.5L16 3Z" stroke="url(#shieldGradSidebar)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="#042F1F" fill-opacity="0.35"/>
+            <path d="M16 8V12M12 16H8M24 16H20M16 20V24" stroke="#34D399" stroke-width="1.8" stroke-linecap="round" opacity="0.75"/>
+            <circle cx="16" cy="16" r="3.5" fill="url(#coreGradSidebar)"/>
+            <circle cx="16" cy="16" r="1.5" fill="#092318"/>
           </svg>
         </div>
         <!-- Logo Text: SCAM (white) BREAKER (emerald green) -->
@@ -76,16 +89,17 @@
           <span>Overview</span>
         </a>
 
-        <!-- 2. Scan History -->
-        <a href="#" data-nav-target="scan-history" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
-          <span class="material-symbols-outlined text-xl">history</span>
-          <span>Scan History</span>
+        <!-- 2. Incident Recovery (Promoted to 2nd position) -->
+        <a href="#" data-nav-target="recovery-assistant" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
+          <span class="material-symbols-outlined text-xl text-rose-400">health_and_safety</span>
+          <span class="flex-1">Incident Recovery</span>
+          <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">17 PLAYBOOKS</span>
         </a>
 
-        <!-- 3. Scam Radar & Intelligence -->
-        <a href="#" data-nav-target="scam-trends" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
-          <span class="material-symbols-outlined text-xl">radar</span>
-          <span>Scam Radar</span>
+        <!-- 3. Trust Verification -->
+        <a href="#" data-nav-target="verification-assistant" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
+          <span class="material-symbols-outlined text-xl">verified_user</span>
+          <span>Trust Verification</span>
         </a>
 
         <!-- 4. Community Intelligence -->
@@ -94,23 +108,22 @@
           <span>Community Intel</span>
         </a>
 
-        <!-- 5. Trust Verification -->
-        <a href="#" data-nav-target="verification-assistant" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
-          <span class="material-symbols-outlined text-xl">verified_user</span>
-          <span>Trust Verification</span>
-        </a>
-
-        <!-- 6. Scam Recovery Assistant (NEW) -->
-        <a href="#" data-nav-target="recovery-assistant" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
-          <span class="material-symbols-outlined text-xl text-rose-400">health_and_safety</span>
-          <span class="flex-1">Recovery Help</span>
-          <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">NEW</span>
-        </a>
-
-        <!-- 7. AI Advisory -->
+        <!-- 5. AI Advisory -->
         <a href="#" id="sidebarAiAdvisoryLink" data-nav-target="ai-chat" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
           <span class="material-symbols-outlined text-xl">smart_toy</span>
           <span>AI Advisory</span>
+        </a>
+
+        <!-- 6. Scan History -->
+        <a href="#" data-nav-target="scan-history" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
+          <span class="material-symbols-outlined text-xl">history</span>
+          <span>Scan History</span>
+        </a>
+
+        <!-- 7. Privacy Policy (NEW) -->
+        <a href="#" data-nav-target="privacy-policy" class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-emerald-100/70 hover:text-white hover:bg-[#103827] font-medium text-sm transition-all duration-150">
+          <span class="material-symbols-outlined text-xl">privacy_tip</span>
+          <span>Privacy Policy</span>
         </a>
 
         <!-- 8. Settings -->
@@ -126,9 +139,10 @@
       <div class="sidebar-aurora"></div>
       <div class="relative z-10 flex items-center gap-3.5">
         <div class="w-10 h-10 flex items-center justify-center">
-          <svg class="w-10 h-10 text-emerald-700/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            <path d="m9 12 2 2 4-4" stroke-width="2" />
+          <svg class="w-10 h-10" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 3L6 7.5V14.5C6 21.2 10.3 27.4 16 29C21.7 27.4 26 21.2 26 14.5V7.5L16 3Z" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#064e3b" fill-opacity="0.25"/>
+            <path d="M16 8V12M12 16H8M24 16H20M16 20V24" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+            <circle cx="16" cy="16" r="3" fill="#10b981"/>
           </svg>
         </div>
         <div class="leading-tight">
@@ -155,9 +169,9 @@
 
         <a href="#" data-nav-target="overview" class="flex items-center gap-2.5 group">
           <div class="w-8 h-8 rounded-lg bg-[#092318] border border-[#154631] flex items-center justify-center shrink-0 shadow-sm">
-            <svg class="w-5 h-5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              <path d="m9 12 2 2 4-4" stroke-width="2.5" />
+            <svg class="w-5 h-5 text-emerald-400" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 3L6 7.5V14.5C6 21.2 10.3 27.4 16 29C21.7 27.4 26 21.2 26 14.5V7.5L16 3Z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="16" cy="16" r="3" fill="currentColor"/>
             </svg>
           </div>
           <div class="flex items-center gap-1 leading-none">
@@ -196,9 +210,9 @@
           <div class="safety-indicator-glow w-16 h-16 flex items-center justify-center">
             <div class="safety-indicator-aura"></div>
             <div class="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center shadow-sm">
-              <svg class="w-6 h-6 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                <path d="m9 12 2 2 4-4" stroke-width="2.5" />
+              <svg class="w-6 h-6 text-emerald-600" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 3L6 7.5V14.5C6 21.2 10.3 27.4 16 29C21.7 27.4 26 21.2 26 14.5V7.5L16 3Z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="16" cy="16" r="3" fill="currentColor"/>
               </svg>
             </div>
           </div>
@@ -474,7 +488,7 @@
           </div>
 
           <!-- Section 6: What You Should Avoid -->
-          <div class="p-4 rounded-xl bg-rose-50/70 border border-rose-200 text-rose-950 space-y-2">
+          <div id="inlineAvoidSection" class="p-4 rounded-xl bg-rose-50/70 border border-rose-200 text-rose-950 space-y-2">
             <span class="text-[10px] font-mono uppercase tracking-wider text-rose-800 font-bold flex items-center gap-1">
               <span class="material-symbols-outlined text-xs text-rose-600">cancel</span>
               <span>5. What You Should Avoid (Critical Hazards)</span>
@@ -684,52 +698,8 @@
         </div>
       </div>
 
-      <!-- ============================================================== -->
-      <!-- VIEW 3: SCAM RADAR & WORLD THREAT INTELLIGENCE                 -->
-      <!-- ============================================================== -->
-      <div id="view-scam-trends" class="view-section space-y-5" style="display: none;">
-        <div class="cyber-card rounded-2xl p-6 border border-slate-200 bg-white shadow-sm space-y-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-            <div>
-              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <span class="material-symbols-outlined text-rose-600">radar</span>
-                Scam Radar &amp; Cybersecurity Intelligence
-              </h2>
-              <p class="text-xs text-slate-500">Live threat velocity, pattern clusters, and incident telemetry from your local database.</p>
-            </div>
-          </div>
-
-          <!-- Radar Notice -->
-          <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center gap-2.5">
-            <span class="material-symbols-outlined text-slate-500 text-base shrink-0">info</span>
-            <span>Telemetry Notice: Statistical surge modeling requires minimum 50 confirmed incidents. Displaying verified incident counts without fabricated percentages.</span>
-          </div>
-
-          <!-- Radar Cards Grid -->
-          <div id="radarCardsGridTrends" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-            <!-- Dynamically populated from /api/radar/trends -->
-          </div>
-
-          <!-- Popular Scam Categories Breakdown -->
-          <div class="space-y-3 pt-2">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-700 font-mono">Popular Threat Categories in SQLite Database</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="popularCategoriesGrid">
-              <!-- Dynamically populated -->
-            </div>
-          </div>
-
-          <!-- Structured Community Pattern Clusters -->
-          <div class="space-y-3 pt-4 border-t border-slate-200">
-            <div class="flex items-center justify-between">
-              <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-700 font-mono">Clustered Threat Patterns &amp; Velocity (Fingerprint Aggregated)</h3>
-              <span class="text-[10px] font-mono text-slate-400">Zero-Log Sanitized Clustering</span>
-            </div>
-            <div id="communityPatternsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <!-- Dynamically populated from /api/community/patterns -->
-            </div>
-          </div>
-        </div>
-      </div>
+      
+      
 
       <!-- ============================================================== -->
       <!-- VIEW 4: COMMUNITY INTELLIGENCE                                 -->
@@ -767,7 +737,7 @@
       </div>
 
       <!-- ============================================================== -->
-      <!-- VIEW 5: TRUST VERIFICATION & DIRECTORY                         -->
+      <!-- VIEW 3: TRUST VERIFICATION & IDENTIFIER ANALYZER               -->
       <!-- ============================================================== -->
       <div id="view-verification-assistant" class="view-section space-y-5" style="display: none;">
         <div class="cyber-card rounded-2xl p-6 border border-slate-200 bg-white shadow-sm space-y-6">
@@ -775,29 +745,37 @@
             <div>
               <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <span class="material-symbols-outlined text-emerald-600">verified_user</span>
-                Trust Verification &amp; Identifier Analyzer
+                Trust Verification &amp; Identifier Inspector
               </h2>
-              <p class="text-xs text-slate-500">Analyze domains, SMS sender headers, phone numbers, and verify against certified directories.</p>
+              <p class="text-xs text-slate-500">Multi-vector analysis for Domains, TRAI DLT SMS Headers, Phone Numbers, and Brand Claims with 4-Tier structured risk evaluation.</p>
             </div>
-            <span class="text-[10px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full self-start sm:self-auto">
-              DLT &amp; Regulatory Registry Cross-Check
-            </span>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full font-bold">
+                DLT &amp; RBI Registry Engine
+              </span>
+            </div>
           </div>
 
-          <!-- Interactive Live Identifier Analyzer -->
+          <!-- Multi-Vector Live Inspector -->
           <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
-            <div>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 font-mono flex items-center gap-2">
-                <span class="material-symbols-outlined text-base text-emerald-600">search_check</span>
-                <span>Live Identifier Check</span>
-              </h3>
-              <p class="text-xs text-slate-600 mt-0.5">Enter a domain, SMS header (e.g. SBIPAY, VM-HDFCBK), 10-digit mobile number, or institution name to verify its authenticity.</p>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 font-mono flex items-center gap-2">
+                  <span class="material-symbols-outlined text-base text-emerald-600">travel_explore</span>
+                  <span>Multi-Vector Identifier Inspection</span>
+                </h3>
+                <p class="text-xs text-slate-600 mt-0.5">Test domains (e.g. onlinesbi.sbi), SMS headers (SBIPAY, VM-HDFCBK), 10-digit sender numbers, or brand names.</p>
+              </div>
+              <div class="flex items-center gap-1.5 text-[10px] font-mono text-slate-500">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                <span>20 Top Institutions Verified</span>
+              </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
               <div class="sm:col-span-8 relative">
                 <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-sm">manage_search</span>
-                <input type="text" id="trustVerifierInput" placeholder="Enter domain (onlinesbi.sbi), SMS header (SBIPAY), phone (+91...), or organization..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-emerald-600 bg-white font-mono" />
+                <input type="text" id="trustVerifierInput" placeholder="Enter domain (e.g. hdfcbank.com), SMS header (SBIPAY), phone (+91...), or brand name..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:border-emerald-600 bg-white font-mono" />
               </div>
               <div class="sm:col-span-4 flex gap-2">
                 <select id="trustVerifierType" class="w-1/2 py-2 px-2.5 text-xs rounded-xl border border-slate-300 bg-white font-medium focus:outline-none focus:border-emerald-600">
@@ -809,35 +787,91 @@
                 </select>
                 <button type="button" id="trustVerifyBtn" class="w-1/2 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs tracking-wide transition-all shadow-sm flex items-center justify-center gap-1.5 active:scale-95">
                   <span class="material-symbols-outlined text-sm">verified</span>
-                  <span>Verify</span>
+                  <span>Inspect</span>
                 </button>
               </div>
             </div>
 
-            <!-- Instant Verification Result Card (Hidden by default) -->
-            <div id="trustVerifierResultCard" class="hidden p-4 rounded-xl border transition-all space-y-3 bg-white">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                  <span id="trustResultIcon" class="material-symbols-outlined text-lg"></span>
-                  <span id="trustResultTitle" class="font-bold text-sm text-slate-900"></span>
+            <!-- Instant 4-Tier Verification Result Card (Hidden by default) -->
+            <div id="trustVerifierResultCard" class="hidden p-5 rounded-xl border transition-all space-y-4 bg-white shadow-sm">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                  <div id="trustResultIconWrap" class="w-8 h-8 rounded-lg flex items-center justify-center">
+                    <span id="trustResultIcon" class="material-symbols-outlined text-lg"></span>
+                  </div>
+                  <div>
+                    <span id="trustResultTitle" class="font-bold text-sm text-slate-900 block"></span>
+                    <span id="trustResultTierLabel" class="text-[10px] font-mono text-slate-500 uppercase"></span>
+                  </div>
                 </div>
-                <span id="trustResultBadge" class="text-[10px] font-mono px-2.5 py-0.5 rounded-full font-semibold"></span>
+                <span id="trustResultBadge" class="text-[10px] font-mono px-3 py-1 rounded-full font-bold"></span>
               </div>
-              <div class="text-xs space-y-2">
-                <p id="trustResultEntity" class="text-slate-700"></p>
-                <div id="trustResultEvidenceContainer" class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                  <span class="font-bold text-slate-800 block text-[11px] mb-1">Evidence Breakdown:</span>
-                  <ul id="trustResultEvidenceList" class="list-disc list-inside space-y-1 text-slate-600 text-[11px]"></ul>
+
+              <!-- Evidence Breakdown -->
+              <div class="text-xs space-y-2.5">
+                <p id="trustResultEntity" class="text-slate-800 font-semibold"></p>
+                <div id="trustResultEvidenceContainer" class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                  <span class="font-bold text-slate-800 block text-[11px] mb-1.5 font-mono uppercase tracking-wide">Structured Evidence Matrix:</span>
+                  <ul id="trustResultEvidenceList" class="list-disc list-inside space-y-1.5 text-slate-600 text-[11px]"></ul>
                 </div>
-                <p id="trustResultAdvice" class="text-[11px] text-slate-600 font-medium"></p>
+                <div class="p-3 rounded-xl bg-emerald-50/50 border border-emerald-200 text-emerald-950">
+                  <span class="font-bold text-[11px] block mb-0.5 text-emerald-900 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs text-emerald-700">lightbulb</span>
+                    Actionable Guidance:
+                  </span>
+                  <p id="trustResultAdvice" class="text-[11px] text-emerald-900/90 leading-relaxed"></p>
+                </div>
+              </div>
+
+              <!-- URL Anatomy Diagnostics Box (Shown when checking domains/URLs) -->
+              <div id="trustUrlAnatomyBox" class="hidden p-3.5 rounded-xl bg-slate-900 text-slate-100 text-xs space-y-2">
+                <div class="flex items-center justify-between text-[11px] font-mono text-emerald-400">
+                  <span class="font-bold flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">troubleshoot</span>
+                    URL Anatomy &amp; SSL Reality Check
+                  </span>
+                  <span class="text-[10px] text-slate-400">RFC 3986 Deconstructed</span>
+                </div>
+                <div id="trustUrlAnatomyDetails" class="font-mono text-[11px] space-y-1 bg-slate-950 p-2.5 rounded-lg border border-slate-800"></div>
+                <p class="text-[10px] text-slate-400 leading-normal">
+                  <strong class="text-amber-400">Crucial Rule:</strong> HTTPS ("padlock" icon) strictly proves data encryption between your phone and the server. It does <strong class="text-rose-400">NOT</strong> verify that the site owner is safe or legal. Scammers get free valid SSL certificates in 60 seconds!
+                </p>
               </div>
 
               <!-- Limitations Disclaimer (Never False-Safe) -->
-              <div class="p-2.5 rounded-lg bg-amber-50/80 border border-amber-200 text-[10px] text-amber-900 flex items-start gap-2">
-                <span class="material-symbols-outlined text-amber-600 text-sm shrink-0 mt-0.5">shield</span>
-                <span>
-                  <strong>Important Security Notice:</strong> Trust Verification cross-references official regulatory directories (DLT, RBI, TRAI) and threat patterns. Absence of an explicit warning does not guarantee safety. Never share passwords or OTPs over phone or SMS.
+              <div class="p-2.5 rounded-lg bg-amber-50/90 border border-amber-200 text-[10px] text-amber-950 flex items-start gap-2">
+                <span class="material-symbols-outlined text-amber-700 text-sm shrink-0 mt-0.5">shield</span>
+                <span class="leading-relaxed">
+                  <strong>Regulatory Baseline:</strong> Trust Verification queries TRAI DLT alphanumeric header norms and official banking registry entries. Absence of an explicit warning is not a warranty of safety. Never share OTPs or passwords over incoming calls or SMS.
                 </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Educational Module: QR Code Security Matrix -->
+          <div class="p-4 rounded-2xl bg-gradient-to-r from-emerald-900 via-slate-900 to-[#092318] text-white space-y-3 shadow-sm border border-emerald-800/40">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-400 text-xl">qr_code_scanner</span>
+              <h3 class="font-bold text-sm tracking-wide text-emerald-200">The Golden Rule of QR Code Security</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3 rounded-xl bg-white/5 border border-white/10 space-y-1.5">
+                <div class="flex items-center gap-1.5 text-rose-400 font-bold font-mono text-[11px]">
+                  <span class="material-symbols-outlined text-sm">cancel</span>
+                  <span>HOW SCAMMERS TRICK YOU:</span>
+                </div>
+                <p class="text-slate-300 text-[11px] leading-relaxed">
+                  "Scan this QR code to receive your ₹25,000 lottery cashback" or "Scan this code to receive advance deposit for your OLX item."
+                </p>
+              </div>
+              <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-400/20 space-y-1.5">
+                <div class="flex items-center gap-1.5 text-emerald-400 font-bold font-mono text-[11px]">
+                  <span class="material-symbols-outlined text-sm">check_circle</span>
+                  <span>THE UNBREAKABLE TRUTH:</span>
+                </div>
+                <p class="text-emerald-100 text-[11px] leading-relaxed">
+                  <strong>Scanning a QR code ONLY transfers money OUT of your bank account.</strong> You NEVER have to scan a QR code or enter your UPI PIN to receive money!
+                </p>
               </div>
             </div>
           </div>
@@ -848,26 +882,35 @@
               <div>
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-900 font-mono flex items-center gap-1.5">
                   <span class="material-symbols-outlined text-emerald-600 text-sm">library_books</span>
-                  <span>Certified Institution Registry &amp; Official Helplines</span>
+                  <span>Certified Institution Registry (20 Official Entities)</span>
                 </h3>
-                <p class="text-[11px] text-slate-500">Official domains, registered TRAI SMS headers, and emergency fraud lines.</p>
+                <p class="text-[11px] text-slate-500">Official transactional portals, registered TRAI SMS headers, and authenticated fraud helplines.</p>
               </div>
               <div class="relative w-full sm:w-64">
                 <span class="material-symbols-outlined absolute left-3 top-2 text-slate-400 text-sm">search</span>
-                <input type="text" id="verificationSearchInput" placeholder="Filter institutions..." class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:border-emerald-600 bg-slate-50" />
+                <input type="text" id="verificationSearchInput" placeholder="Filter 20 certified institutions..." class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:border-emerald-600 bg-slate-50 font-mono" />
               </div>
             </div>
 
-            <!-- Full Directory Grid -->
-            <div id="verificationDirectoryGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <!-- Dynamically populated from data.js -->
+            <!-- Category Filter Tabs -->
+            <div class="flex flex-wrap items-center gap-1.5" id="trustCategoryFilterBar">
+              <button class="trust-cat-filter px-3 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 active" data-cat="all">All (20)</button>
+              <button class="trust-cat-filter px-3 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200" data-cat="Banking">Banking</button>
+              <button class="trust-cat-filter px-3 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200" data-cat="Payments & UPI">Payments &amp; UPI</button>
+              <button class="trust-cat-filter px-3 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200" data-cat="Government">Government &amp; Police</button>
+              <button class="trust-cat-filter px-3 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200" data-cat="E-Commerce">E-Commerce &amp; Tech</button>
+            </div>
+
+            <!-- Full Directory Grid (20 Institutions) -->
+            <div id="verificationDirectoryGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+              <!-- Dynamically populated from data.js expanded_trust_directory -->
             </div>
           </div>
         </div>
       </div>
 
       <!-- ============================================================== -->
-      <!-- VIEW 6: SCAM RECOVERY ASSISTANT                                -->
+      <!-- VIEW 2: INCIDENT RECOVERY WIZARD (17 INTERACTIVE PLAYBOOKS)    -->
       <!-- ============================================================== -->
       <div id="view-recovery-assistant" class="view-section space-y-5" style="display: none;">
         <div class="cyber-card rounded-2xl p-6 border border-slate-200 bg-white shadow-sm space-y-6">
@@ -875,12 +918,13 @@
             <div>
               <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <span class="material-symbols-outlined text-rose-600">health_and_safety</span>
-                Scam Recovery Assistant &amp; Incident Triage
+                Incident Recovery Assistant &amp; Containment Wizard
               </h2>
-              <p class="text-xs text-slate-500">Step-by-step incident response playbook if you or someone you know has experienced fraud.</p>
+              <p class="text-xs text-slate-500">17 specialized incident response playbooks with interactive step tracking, Golden Hour containment, and evidence preservation.</p>
             </div>
-            <span class="text-[10px] font-mono text-rose-800 bg-rose-50 border border-rose-200 px-2.5 py-1 rounded-full self-start sm:self-auto font-bold">
-              Emergency Action Framework
+            <span class="text-[10px] font-mono text-rose-800 bg-rose-50 border border-rose-200 px-3 py-1 rounded-full self-start sm:self-auto font-bold flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-rose-500 inline-block animate-ping"></span>
+              <span>17 Active Playbooks</span>
             </span>
           </div>
 
@@ -891,7 +935,7 @@
               <span>The "Golden Hour" Protocol (First 2–3 Hours After Fraud)</span>
             </div>
             <p class="leading-relaxed text-rose-900/90 text-[11px]">
-              If money was transferred fraudulently, immediate reporting within 2 to 3 hours enables automated inter-bank lien marking and fund freezing under the National Cybercrime Reporting Portal (NCRP) / 1930 framework. Every minute counts before funds are layered into mule accounts or withdrawn at ATMs.
+              If money was transferred fraudulently via UPI or NetBanking, immediate reporting within 2 to 3 hours triggers automated inter-bank lien marking and beneficiary freezing under the National Cybercrime Reporting Portal (NCRP / 1930) and partner bank emergency desks before criminals can cash out at ATMs.
             </p>
             <div class="flex flex-wrap items-center gap-3 pt-1">
               <a href="tel:1930" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm">
@@ -902,142 +946,172 @@
                 <span class="material-symbols-outlined text-sm">open_in_new</span>
                 <span>File on cybercrime.gov.in</span>
               </a>
+              <a href="https://sancharsaathi.gov.in/sfc/" target="_blank" rel="noopener noreferrer" class="px-3.5 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-bold text-xs flex items-center gap-1.5 shadow-sm">
+                <span class="material-symbols-outlined text-sm">phone_disabled</span>
+                <span>Report on Chakshu (DoT)</span>
+              </a>
             </div>
           </div>
 
-          <!-- Situation Selector: 7 Scenarios -->
+          <!-- Incident Search and Category Filter -->
           <div class="space-y-3">
-            <div>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 font-mono">Select Your Incident Scenario</h3>
-              <p class="text-xs text-slate-500">Choose what happened to receive a personalized, prioritized step-by-step response plan.</p>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-800 font-mono">Select Your Incident Playbook</h3>
+                <p class="text-xs text-slate-500">Pick from 17 specific fraud scenarios for a tailored interactive containment plan.</p>
+              </div>
+              <div class="relative w-full sm:w-64">
+                <span class="material-symbols-outlined absolute left-3 top-2 text-slate-400 text-sm">search</span>
+                <input type="text" id="recoverySearchInput" placeholder="Search 17 incident playbooks..." class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:border-rose-500 bg-slate-50 font-mono" />
+              </div>
             </div>
 
+            <!-- Category Filter Pills -->
+            <div class="flex flex-wrap items-center gap-1.5" id="recoveryCategoryPills">
+              <button class="recovery-cat-pill px-3 py-1 rounded-full text-[11px] font-semibold bg-rose-100 text-rose-800 border border-rose-300 active" data-category="all">All Scenarios (17)</button>
+              <button class="recovery-cat-pill px-3 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200" data-category="financial">Financial &amp; Banking</button>
+              <button class="recovery-cat-pill px-3 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200" data-category="account">Account &amp; Identity</button>
+              <button class="recovery-cat-pill px-3 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200" data-category="device">Device &amp; Malware</button>
+              <button class="recovery-cat-pill px-3 py-1 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200" data-category="extortion">Scams &amp; Extortion</button>
+            </div>
+
+            <!-- Dynamic Grid of 17 Playbook Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="recoverySituationGrid">
-              <!-- Situation 1 -->
-              <div class="recovery-situation-card p-3.5 rounded-xl border border-slate-200 bg-slate-50 active" data-situation="money_sent">
-                <div class="flex items-center gap-2 mb-1.5">
-                  <span class="material-symbols-outlined text-rose-600 text-lg">currency_rupee</span>
-                  <h4 class="font-bold text-xs text-slate-900">Money Sent / Financial Loss</h4>
-                </div>
-                <p class="text-[11px] text-slate-600">Transferred funds via UPI, IMPS, RTGS, NetBanking, or card.</p>
-              </div>
-
-              <!-- Situation 2 -->
-              <div class="recovery-situation-card p-3.5 rounded-xl border border-slate-200 bg-slate-50" data-situation="credentials_shared">
-                <div class="flex items-center gap-2 mb-1.5">
-                  <span class="material-symbols-outlined text-amber-600 text-lg">key</span>
-                  <h4 class="font-bold text-xs text-slate-900">Banking Password / OTP Shared</h4>
-                </div>
-                <p class="text-[11px] text-slate-600">Entered OTP, ATM PIN, or NetBanking password on a fake site or call.</p>
-              </div>
-
-              <!-- Situation 3 -->
-              <div class="recovery-situation-card p-3.5 rounded-xl border border-slate-200 bg-slate-50" data-situation="apk_installed">
-                <div class="flex items-center gap-2 mb-1.5">
-                  <span class="material-symbols-outlined text-rose-600 text-lg">android</span>
-                  <h4 class="font-bold text-xs text-slate-900">Malicious APK / Remote App</h4>
-                </div>
-                <p class="text-[11px] text-slate-600">Downloaded unknown APK, AnyDesk, TeamViewer, or QuickSupport.</p>
-              </div>
-
-              <!-- Situation 4 -->
-              <div class="recovery-situation-card p-3.5 rounded-xl border border-slate-200 bg-slate-50" data-situation="account_compromised">
-                <div class="flex items-center gap-2 mb-1.5">
-                  <span class="material-symbols-outlined text-indigo-600 text-lg">account_box</span>
-                  <h4 class="font-bold text-xs text-slate-900">Account Compromised</h4>
-                </div>
-                <p class="text-[11px] text-slate-600">WhatsApp, Telegram, email, or social media hijacked or locked out.</p>
-              </div>
-
-              <!-- Situation 5 -->
-              <div class="recovery-situation-card p-3.5 rounded-xl border border-slate-200 bg-slate-50" data-situation="link_clicked">
-                <div class="flex items-center gap-2 mb-1.5">
-                  <span class="material-symbols-outlined text-blue-600 text-lg">link</span>
-                  <h4 class="font-bold text-xs text-slate-900">Phishing Link Clicked</h4>
-                </div>
-                <p class="text-[11px] text-slate-600">Clicked suspicious link; want to verify phone safety and exposure.</p>
-              </div>
-
-              <!-- Situation 6 -->
-              <div class="recovery-situation-card p-3.5 rounded-xl border border-slate-200 bg-slate-50" data-situation="personal_info_leaked">
-                <div class="flex items-center gap-2 mb-1.5">
-                  <span class="material-symbols-outlined text-purple-600 text-lg">badge</span>
-                  <h4 class="font-bold text-xs text-slate-900">Personal ID Leaked (Aadhaar/PAN)</h4>
-                </div>
-                <p class="text-[11px] text-slate-600">Shared Aadhaar, PAN card, photo, or sensitive documents.</p>
-              </div>
-
-              <!-- Situation 7 -->
-              <div class="recovery-situation-card p-3.5 rounded-xl border border-slate-200 bg-slate-50 lg:col-span-3 sm:col-span-2" data-situation="other_threat">
-                <div class="flex items-center gap-2 mb-1.5">
-                  <span class="material-symbols-outlined text-rose-700 text-lg">gavel</span>
-                  <h4 class="font-bold text-xs text-slate-900">Extortion, "Digital Arrest", or Video Call Coercion</h4>
-                </div>
-                <p class="text-[11px] text-slate-600">Threatened by fake police, CBI, customs, or sextortion blackmail.</p>
-              </div>
+              <!-- Dynamically populated from data.js recoveryGuidance.situations -->
             </div>
           </div>
 
-          <!-- Dynamic Action Plan & Checklist -->
+          <!-- Dynamic Action Plan & Interactive Checklist Container -->
           <div id="recoveryActionPlanContainer" class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-5">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
               <div>
-                <span id="recoveryPlanUrgency" class="text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase bg-rose-100 text-rose-800">CRITICAL PRIORITY</span>
-                <h3 id="recoveryPlanTitle" class="text-sm font-bold text-slate-900 mt-1">Action Plan: Money Sent / Financial Loss</h3>
+                <div class="flex items-center gap-2 mb-1">
+                  <span id="recoveryPlanUrgency" class="text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase bg-rose-100 text-rose-800">CRITICAL PRIORITY</span>
+                  <span id="recoveryPlanCategoryBadge" class="text-[10px] font-mono px-2 py-0.5 rounded font-medium bg-slate-200 text-slate-700">Financial</span>
+                </div>
+                <h3 id="recoveryPlanTitle" class="text-base font-bold text-slate-900">Action Plan: Money Transferred / Wire Loss</h3>
+                <p id="recoveryPlanSubtitle" class="text-xs text-slate-500 mt-0.5"></p>
               </div>
-              <button type="button" id="copyRecoveryChecklistBtn" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-sm active:scale-95 self-start sm:self-auto">
+              <button type="button" id="copyRecoveryChecklistBtn" class="px-3.5 py-2 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 text-xs font-semibold flex items-center gap-1.5 shadow-sm active:scale-95 self-start sm:self-auto shrink-0">
                 <span class="material-symbols-outlined text-sm">content_copy</span>
-                <span>Copy Action Checklist</span>
+                <span>Copy Full Action Plan</span>
               </button>
             </div>
 
-            <!-- Priority Action Steps -->
-            <div class="space-y-2">
-              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 font-mono">Immediate Response Steps (In Order)</h4>
-              <ol id="recoveryStepsList" class="space-y-2.5 text-xs text-slate-800">
-                <!-- Dynamically populated from data.js -->
-              </ol>
+            <!-- Interactive Progress Bar Tracker -->
+            <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-2">
+              <div class="flex items-center justify-between text-xs font-mono">
+                <span class="text-slate-700 font-bold flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-sm text-emerald-600">checklist</span>
+                  <span>Containment Progress:</span>
+                </span>
+                <span id="recoveryProgressText" class="text-emerald-700 font-bold">0 of 6 actions completed (0%)</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div id="recoveryProgressBar" class="bg-emerald-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Incident Overview: What Happened & What Was Compromised -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-1">
+                <span class="font-bold text-slate-900 block text-[11px] uppercase tracking-wide font-mono text-rose-700">Incident Impact:</span>
+                <p id="recoveryWhatHappened" class="text-slate-600 leading-relaxed"></p>
+              </div>
+              <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-1">
+                <span class="font-bold text-slate-900 block text-[11px] uppercase tracking-wide font-mono text-amber-700">Assets at Risk:</span>
+                <p id="recoveryCompromisedAssets" class="text-slate-600 leading-relaxed font-mono text-[11px]"></p>
+              </div>
+            </div>
+
+            <!-- Priority Interactive Containment Checklist -->
+            <div class="space-y-2.5">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 font-mono flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-rose-600 text-sm">task_alt</span>
+                  <span>Step-by-Step Interactive Containment Checklist</span>
+                </h4>
+                <span class="text-[10px] text-slate-400">Click steps as you complete them</span>
+              </div>
+              <div id="recoveryChecklistContainer" class="space-y-2 text-xs">
+                <!-- Dynamically generated with interactive checkboxes -->
+              </div>
+            </div>
+
+            <!-- Documents & Evidence to Preserve for Police / 1930 / Bank Dispute -->
+            <div class="p-4 rounded-xl bg-white border border-slate-200 space-y-2 text-xs">
+              <div class="flex items-center gap-1.5 font-bold text-slate-900 uppercase font-mono text-[11px]">
+                <span class="material-symbols-outlined text-sm text-indigo-600">inventory_2</span>
+                <span>Evidence to Preserve for Police / Bank Dispute / NCRP:</span>
+              </div>
+              <ul id="recoveryEvidenceList" class="list-disc list-inside space-y-1 text-slate-600 text-[11px]"></ul>
+            </div>
+
+            <!-- What You Should Avoid (Hazard Prevention) -->
+            <div class="p-4 rounded-xl bg-rose-50/80 border border-rose-200 space-y-2 text-xs">
+              <div class="flex items-center gap-1.5 font-bold text-rose-900 uppercase font-mono text-[11px]">
+                <span class="material-symbols-outlined text-sm text-rose-600">block</span>
+                <span>Critical Actions to Avoid:</span>
+              </div>
+              <ul id="recoveryAvoidList" class="list-disc list-inside space-y-1 text-rose-900 text-[11px]"></ul>
+            </div>
+
+            <!-- Official Direct Authority Desks & Helplines -->
+            <div class="space-y-2 pt-2 border-t border-slate-200">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 font-mono flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-emerald-600 text-sm">contact_phone</span>
+                  <span>Incident-Specific Escalation Contacts</span>
+                </h4>
+                <span class="text-[10px] font-mono text-slate-400">Official Channels</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5" id="recoverySpecificContactsGrid"></div>
             </div>
 
             <!-- Emergency Direct Bank Fraud Desks -->
             <div class="space-y-2 pt-3 border-t border-slate-200">
               <div class="flex items-center justify-between">
-                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 font-mono flex items-center gap-1.5">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 font-mono flex items-center gap-1.5">
                   <span class="material-symbols-outlined text-emerald-600 text-sm">account_balance</span>
-                  <span>Major Bank Emergency Fraud Helplines</span>
+                  <span>Major Bank Emergency Fraud Desks (24x7 Direct Lines)</span>
                 </h4>
-                <span class="text-[10px] font-mono text-slate-400">24x7 Direct Desks</span>
+                <span class="text-[10px] font-mono text-slate-400">Toll-Free Direct Freeze</span>
               </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5" id="recoveryBankHelplinesGrid">
-                <!-- Dynamically populated -->
-              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5" id="recoveryBankHelplinesGrid"></div>
             </div>
 
-            <!-- What You Will Need for Police / Cybercrime Complaint -->
-            <div class="p-3.5 rounded-xl bg-white border border-slate-200 space-y-2 text-xs">
-              <span class="font-bold text-slate-900 block text-[11px] uppercase tracking-wide">Documents &amp; Evidence Required for NCRP / 1930:</span>
-              <ul class="list-disc list-inside space-y-1 text-slate-600 text-[11px]">
-                <li>Transaction Reference Number (UTR / UPI Ref ID / RRN) from bank SMS or mini-statement</li>
-                <li>Screenshot of payment confirmation showing beneficiary UPI ID or account number</li>
-                <li>Screenshot of chat/message thread with scammer (keep intact without deleting)</li>
-                <li>Sender mobile number, email, or social media profile handle</li>
-                <li>Brief chronological narrative (date, time, what was promised, how payment was induced)</li>
-              </ul>
+            <!-- Payment Wallets & UPI Desks -->
+            <div class="space-y-2 pt-3 border-t border-slate-200">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 font-mono flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-indigo-600 text-sm">payments</span>
+                  <span>Payment Apps &amp; UPI Grievance Helplines</span>
+                </h4>
+                <span class="text-[10px] font-mono text-slate-400">Wallets &amp; BHIM</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5" id="recoveryPaymentHelplinesGrid"></div>
+            </div>
+
+            <!-- Follow-Up Plan -->
+            <div class="p-3.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-mono space-y-1">
+              <span class="font-bold block text-[11px] text-slate-900">Post-Containment Security Plan:</span>
+              <p id="recoveryFollowUpPlan" class="text-[11px] text-slate-600 leading-relaxed"></p>
             </div>
           </div>
 
           <!-- Secondary Recovery Scam Caution -->
-          <div class="p-4 rounded-xl bg-amber-50/80 border border-amber-300 text-xs text-amber-950 space-y-1.5">
+          <div class="p-4 rounded-xl bg-amber-50/90 border border-amber-300 text-xs text-amber-950 space-y-1.5">
             <div class="flex items-center gap-2 font-bold text-amber-900 text-xs">
               <span class="material-symbols-outlined text-amber-600 text-base">warning</span>
-              <span>BEWARE: Secondary "Recovery Fee" Scams Targeting Victims</span>
+              <span>BEWARE: Secondary "Recovery Fee" Scams Targeting Fraud Victims</span>
             </div>
             <p class="text-[11px] text-amber-900/90 leading-relaxed">
-              Criminals actively monitor cyber complaints and victim comments on social media, posing as "ethical hackers", "cyber recovery specialists", or "reputation managers" promising to retrieve your lost funds for an upfront fee. <strong>Official police, RBI, and SCAM BREAKER never charge any recovery fee.</strong> Anyone demanding payment to recover lost money is a fraudster.
+              Criminals actively monitor social media posts and cyber complaints, posing as "ethical hackers", "cyber recovery experts", or "lawyers" promising to recover your stolen funds for an advance fee. <strong>Official police, RBI, and SCAM BREAKER never charge any recovery fee.</strong> Anyone demanding upfront payment to recover lost money is a secondary fraudster!
             </p>
           </div>
         </div>
       </div>
+
 
       <!-- ============================================================== -->
       <!-- VIEW 7: FULL-SCREEN AI ADVISORY ASSISTANT                      -->
@@ -1217,11 +1291,105 @@
 
     </main>
 
+    <!-- ============================================================== -->
+      <!-- VIEW 7: TRANSPARENT PRIVACY POLICY & DATA STORAGE              -->
+      <!-- ============================================================== -->
+      <div id="view-privacy-policy" class="view-section space-y-5" style="display: none;">
+        <div class="cyber-card rounded-2xl p-6 border border-slate-200 bg-white shadow-sm space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+            <div>
+              <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600">privacy_tip</span>
+                Privacy Policy &amp; Data Safeguards
+              </h2>
+              <p class="text-xs text-slate-500">Transparent disclosures regarding local SQLite storage, AI evaluation endpoints, and your rights to inspect and purge data.</p>
+            </div>
+            <span class="text-[10px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full font-bold">
+              Transparent Local Storage
+            </span>
+          </div>
+
+          <div class="space-y-4 text-xs text-slate-700 leading-relaxed">
+            <!-- 1. Local Database Logging -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+              <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-base text-emerald-600">storage</span>
+                <span>1. Local SQLite Audit Storage</span>
+              </h3>
+              <p>
+                When you submit a text message, suspicious URL, or audio recording for analysis, SCAM BREAKER records the audit record locally in the SQLite database (<code class="font-mono text-emerald-800 bg-emerald-50 px-1 py-0.5 rounded">scans</code> table) running on this machine. This enables your local Scan History view, risk filtering, and PDF threat certificate generation.
+              </p>
+              <p>
+                <strong>No Cloud Sync:</strong> We do not operate external telemetry tracking servers. Your historical scan records remain exclusively inside your local SQLite database file.
+              </p>
+            </div>
+
+            <!-- 2. AI Processing (Google Gemini API) -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+              <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-base text-emerald-600">psychology</span>
+                <span>2. AI Analysis &amp; External API Transmission</span>
+              </h3>
+              <p>
+                To provide explainable threat intelligence, text queries and audio transcripts are processed through the Google Gemini API using official enterprise API keys. The text payload is transmitted securely via HTTPS TLS 1.3 to Google's inference servers for real-time classification.
+              </p>
+              <p>
+                <strong>Training Safeguards:</strong> Under Google API terms for enterprise inference endpoints, user prompts submitted via API are not utilized to train public foundational AI models.
+              </p>
+            </div>
+
+            <!-- 3. Zero Tracking Cookies & Advertising Beacons -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+              <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-base text-emerald-600">cookie_off</span>
+                <span>3. Zero Commercial Ad Trackers &amp; Zero Tracking Cookies</span>
+              </h3>
+              <p>
+                SCAM BREAKER does NOT load Google Analytics, Facebook Pixel, advertising beacons, or commercial tracker scripts. The application operates solely with local in-memory session variables and browser <code class="font-mono text-emerald-800 bg-emerald-50 px-1 py-0.5 rounded">localStorage</code> solely to preserve active scan state across page reloads.
+              </p>
+            </div>
+
+            <!-- 4. Media Ephemerality (Screenshots & Audio Files) -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+              <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-base text-emerald-600">delete_sweep</span>
+                <span>4. Media Ephemerality Policy</span>
+              </h3>
+              <p>
+                Uploaded screenshot images and recorded voice clips are held in ephemeral RAM/temporary buffer files exclusively for OCR text extraction and speech-to-text recognition. Once text is extracted, temporary audio and image files are immediately unlinked from the server filesystem.
+              </p>
+            </div>
+
+            <!-- 5. User Data Sovereignty & Immediate Purge Rights -->
+            <div class="p-4 rounded-xl bg-rose-50/60 border border-rose-200 space-y-2 text-rose-950">
+              <h3 class="text-sm font-bold text-rose-900 flex items-center gap-2">
+                <span class="material-symbols-outlined text-base text-rose-600">cleaning_services</span>
+                <span>5. Full User Data Sovereignty &amp; Instant Data Purge</span>
+              </h3>
+              <p>
+                You retain complete control over your scan history. You can permanently wipe all stored SQLite records at any time with a single click.
+              </p>
+              <div class="pt-1">
+                <button onclick="window.purgeSessionHistory()" class="px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-sm">delete_forever</span>
+                  <span>Purge All SQLite Scan Records Now</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 6. Legal & Operational Disclaimer -->
+            <div class="p-3.5 rounded-xl bg-slate-100 border border-slate-200 text-[11px] text-slate-600">
+              <strong>Independent Platform Disclaimer:</strong> SCAM BREAKER is an independent educational and digital safety threat-triage system. It is not affiliated with, endorsed by, or representing the Reserve Bank of India (RBI), Ministry of Home Affairs (MHA), Telecom Regulatory Authority of India (TRAI), or any financial banking institution. Threat assessments represent heuristic evaluations and should be verified with certified bank fraud departments.
+            </div>
+          </div>
+        </div>
+      </div>
+
     <!-- FOOTER -->
     <footer class="mt-auto border-t border-slate-200 bg-white py-4 px-4 sm:px-8 text-center text-xs text-slate-500">
       <div class="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <span>SCAM BREAKER • Smart Scam &amp; Threat Detection Platform</span>
-        <span class="font-mono text-[11px] text-emerald-700">Strict Privacy Safeguards • Zero-Log Storage</span>
+        <a href="#" data-nav-target="privacy-policy" class="font-mono text-[11px] text-emerald-700 hover:text-emerald-900 hover:underline">Privacy Policy &amp; Local SQLite Storage Disclosures</a>
       </div>
     </footer>
 
