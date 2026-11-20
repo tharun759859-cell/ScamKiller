@@ -159,7 +159,19 @@ document.addEventListener("DOMContentLoaded", () => {
     settings: "System & Privacy Settings"
   };
 
-  function navigateTo(viewId) {
+  function safeOpenExternal(url, label = "destination") {
+    try {
+      const newWin = window.open(url, "_blank", "noopener,noreferrer");
+      if (!newWin || newWin.closed || typeof newWin.closed === "undefined") {
+        window.location.href = url;
+      }
+    } catch (err) {
+      console.error(`Failed to open ${label}:`, err);
+      showToast(`Unable to open ${label}. Please visit: ${url}`, "info");
+    }
+  }
+
+  function navigateTo(viewId, situationKey = null, autoScroll = false) {
     currentView = viewId;
 
     // Update active nav styling
@@ -199,10 +211,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (viewId === "scan-history") loadScanHistory();
     if (viewId === "community-intel") loadCommunityIntelligence();
     if (viewId === "verification-assistant") initTrustVerificationView();
-    if (viewId === "recovery-assistant") loadRecoveryAssistant();
+    if (viewId === "recovery-assistant") loadRecoveryAssistant(situationKey, autoScroll);
     if (viewId === "ai-chat") initFullAiChatView();
 
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (!autoScroll) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }
 
   // Bind nav click listeners
@@ -722,7 +736,25 @@ document.addEventListener("DOMContentLoaded", () => {
         recoveryCallout.classList.remove("hidden");
         if (launchRecoveryBtn) {
           launchRecoveryBtn.onclick = () => {
-            navigateTo("recovery-assistant");
+            const contextText = ((result.submitted_item || "") + " " + (result.explanation || "") + " " + (result.category || "") + " " + contentText).toLowerCase();
+            let targetPlaybook = "money_transferred";
+            if (contextText.includes("upi") || contextText.includes("qr") || contextText.includes("phonepe") ||
+                contextText.includes("gpay") || contextText.includes("google pay") || contextText.includes("paytm") ||
+                contextText.includes("vpa") || contextText.includes("collect request") || contextText.includes("bhim") ||
+                contextText.includes("rrn") || contextText.includes("utr")) {
+              targetPlaybook = "upi_fraud";
+            } else if (contextText.includes("apk") || contextText.includes("malware") || contextText.includes(".apk")) {
+              targetPlaybook = "malicious_apk";
+            } else if (contextText.includes("bank") || contextText.includes("kyc") || contextText.includes("pan") || contextText.includes("netbanking")) {
+              targetPlaybook = "bank_compromise";
+            } else if (contextText.includes("card") || contextText.includes("cvv") || contextText.includes("debit") || contextText.includes("credit")) {
+              targetPlaybook = "card_compromise";
+            } else if (contextText.includes("password") || contextText.includes("credential")) {
+              targetPlaybook = "password_stolen";
+            } else if (contextText.includes("crypto") || contextText.includes("token") || contextText.includes("seed phrase")) {
+              targetPlaybook = "crypto_fraud";
+            }
+            navigateTo("recovery-assistant", targetPlaybook, true);
           };
         }
       } else {
@@ -1055,8 +1087,24 @@ document.addEventListener("DOMContentLoaded", () => {
           <span class="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">${escapeHtml(item.status || "VERIFIED")}</span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-          <div><span class="text-slate-400 block uppercase text-[9px]">Official Portal:</span><span class="font-mono font-semibold text-emerald-700">${escapeHtml(item.domain)}</span></div>
-          <div><span class="text-slate-400 block uppercase text-[9px]">Helpline:</span><span class="font-mono text-slate-800">${escapeHtml(item.helpline)}</span></div>
+          <div>
+            <span class="text-slate-400 block uppercase text-[9px]">Official Portal:</span>
+            ${item.domain && item.domain.startsWith('http') ? `
+              <a href="${escapeHtml(item.domain)}" target="_blank" rel="noopener noreferrer" class="font-mono font-semibold text-emerald-700 hover:text-emerald-900 hover:underline inline-flex items-center gap-1 transition-colors">
+                <span class="truncate">${escapeHtml(item.domain)}</span>
+                <span class="material-symbols-outlined text-[12px] shrink-0">open_in_new</span>
+              </a>
+            ` : `<span class="font-mono font-semibold text-emerald-700">${escapeHtml(item.domain)}</span>`}
+          </div>
+          <div>
+            <span class="text-slate-400 block uppercase text-[9px]">Helpline:</span>
+            ${(item.helpline && /\d{3,}/.test(item.helpline)) ? `
+              <a href="tel:${escapeHtml(item.helpline.split('/')[0].replace(/[^\d+]/g, ''))}" class="font-mono text-slate-800 hover:text-emerald-700 hover:underline inline-flex items-center gap-1 transition-colors">
+                <span class="material-symbols-outlined text-xs text-rose-600 shrink-0">call</span>
+                <span>${escapeHtml(item.helpline)}</span>
+              </a>
+            ` : `<span class="font-mono text-slate-800">${escapeHtml(item.helpline)}</span>`}
+          </div>
         </div>
         ${item.smsHeader ? `<div class="text-[11px]"><span class="text-slate-400 block uppercase text-[9px]">Registered DLT SMS Headers:</span><span class="font-mono text-slate-700 font-semibold">${escapeHtml(item.smsHeader)}</span></div>` : ""}
         <p class="text-[11px] text-slate-600 bg-white p-2 rounded border border-slate-200 leading-relaxed">${escapeHtml(item.rule)}</p>
@@ -1267,11 +1315,21 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentRecoveryCategory = "all";
   let activePlaybookKey = "money_transferred";
 
-  function loadRecoveryAssistant(defaultSituation = "money_transferred") {
-    activePlaybookKey = defaultSituation;
+  function loadRecoveryAssistant(defaultSituation = null, autoScroll = false) {
+    if (defaultSituation) {
+      activePlaybookKey = defaultSituation;
+    }
     const dataStore = window.SCAM_BREAKER_DATA || window.SCAM_KILLER_DATA || {};
     const guidance = dataStore.recoveryGuidance || {};
     const situations = guidance.situations || guidance.situationPlaybooks || {};
+
+    // If activePlaybook has a category and it doesn't match currentRecoveryCategory, reset to "all" so it's visible
+    if (activePlaybookKey && situations[activePlaybookKey] && currentRecoveryCategory !== "all") {
+      const targetCat = situations[activePlaybookKey].category;
+      if (targetCat && targetCat !== currentRecoveryCategory) {
+        currentRecoveryCategory = "all";
+      }
+    }
 
     renderRecoveryScenarioGrid(situations, "", currentRecoveryCategory);
 
@@ -1280,6 +1338,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (pillsContainer) {
       const pills = pillsContainer.querySelectorAll(".recovery-cat-pill");
       pills.forEach(pill => {
+        const cat = pill.getAttribute("data-category") || "all";
+        if (cat === currentRecoveryCategory) {
+          pill.classList.add("active", "bg-rose-100", "text-rose-800", "border-rose-300");
+          pill.classList.remove("bg-slate-100", "text-slate-700", "border-slate-200");
+        } else {
+          pill.classList.remove("active", "bg-rose-100", "text-rose-800", "border-rose-300");
+          pill.classList.add("bg-slate-100", "text-slate-700", "border-slate-200");
+        }
         pill.onclick = () => {
           pills.forEach(p => {
             p.classList.remove("active", "bg-rose-100", "text-rose-800", "border-rose-300");
@@ -1305,6 +1371,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     renderRecoverySituation(activePlaybookKey);
+
+    if (autoScroll) {
+      setTimeout(() => {
+        const planContainer = document.getElementById("recoveryActionPlanContainer");
+        if (planContainer) {
+          planContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 60);
+    }
   }
 
   function renderRecoveryScenarioGrid(situations, query = "", category = "all") {
@@ -1372,6 +1447,12 @@ document.addEventListener("DOMContentLoaded", () => {
         card.classList.remove("border-slate-200", "bg-slate-50");
         activePlaybookKey = key;
         renderRecoverySituation(key);
+
+        // Immediate responsive scroll into action plan so the user is never stuck
+        const planContainer = document.getElementById("recoveryActionPlanContainer");
+        if (planContainer) {
+          planContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       };
 
       grid.appendChild(card);
@@ -1492,15 +1573,42 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         `;
       } else {
-        specificContactsGrid.innerHTML = contacts.map(c => `
-          <div class="p-3 rounded-xl bg-white border border-slate-200 text-xs space-y-1 shadow-2xs">
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-slate-900">${escapeHtml(c.entity)}</span>
-              <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">${escapeHtml(c.channel || 'Official')}</span>
+        specificContactsGrid.innerHTML = contacts.map(c => {
+          const infoStr = String(c.info || "").trim();
+          const isUrl = infoStr.startsWith("http://") || infoStr.startsWith("https://") || infoStr.includes("cybercrime.gov.in") || infoStr.includes(".gov.in");
+          const isPhone = !isUrl && /\d{3,}/.test(infoStr);
+
+          let infoHtml = "";
+          if (isUrl) {
+            const hrefUrl = infoStr.startsWith("http") ? infoStr : `https://${infoStr}`;
+            infoHtml = `
+              <a href="${escapeHtml(hrefUrl)}" target="_blank" rel="noopener noreferrer" class="text-[11px] font-mono text-emerald-700 font-bold hover:underline hover:text-emerald-900 inline-flex items-center gap-1 transition-colors">
+                <span class="material-symbols-outlined text-[13px] shrink-0">open_in_new</span>
+                <span class="truncate">${escapeHtml(infoStr)}</span>
+              </a>
+            `;
+          } else if (isPhone) {
+            const cleanPhone = infoStr.split('/')[0].replace(/[^\d+]/g, '');
+            infoHtml = `
+              <a href="tel:${escapeHtml(cleanPhone)}" class="text-[11px] font-mono text-emerald-700 font-bold hover:underline hover:text-emerald-900 inline-flex items-center gap-1 transition-colors">
+                <span class="material-symbols-outlined text-[13px] text-rose-600 shrink-0">call</span>
+                <span>${escapeHtml(infoStr)}</span>
+              </a>
+            `;
+          } else {
+            infoHtml = `<div class="text-[11px] font-mono text-emerald-700 font-bold">${escapeHtml(infoStr)}</div>`;
+          }
+
+          return `
+            <div class="p-3 rounded-xl bg-white border border-slate-200 text-xs space-y-1 shadow-2xs">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-slate-900">${escapeHtml(c.entity)}</span>
+                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">${escapeHtml(c.channel || 'Official')}</span>
+              </div>
+              ${infoHtml}
             </div>
-            <div class="text-[11px] font-mono text-emerald-700 font-bold">${escapeHtml(c.info)}</div>
-          </div>
-        `).join("");
+          `;
+        }).join("");
       }
     }
 
@@ -1513,9 +1621,17 @@ document.addEventListener("DOMContentLoaded", () => {
             <span class="text-[9px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 font-bold">24x7 Direct</span>
           </div>
           <div class="text-[11px] text-slate-600 flex items-center gap-1">
-            <span class="material-symbols-outlined text-xs text-rose-600">call</span>
-            <a href="tel:${escapeHtml(b.phone.replace(/[\s-]/g, ''))}" class="font-mono font-bold text-slate-800 hover:text-rose-600">${escapeHtml(b.phone)}</a>
+            <span class="material-symbols-outlined text-xs text-rose-600 shrink-0">call</span>
+            <a href="tel:${escapeHtml(b.phone.replace(/[\s-]/g, ''))}" class="font-mono font-bold text-slate-800 hover:text-rose-600 transition-colors">${escapeHtml(b.phone)}</a>
           </div>
+          ${b.portal ? `
+            <div class="pt-0.5">
+              <a href="${escapeHtml(b.portal)}" target="_blank" rel="noopener noreferrer" class="text-[10px] text-emerald-700 underline font-mono inline-flex items-center gap-1 hover:text-emerald-900 transition-colors">
+                <span class="material-symbols-outlined text-[10px] shrink-0">open_in_new</span>
+                <span>Official Banking Portal</span>
+              </a>
+            </div>
+          ` : ''}
           <div class="text-[10px] text-slate-500 font-mono">${escapeHtml(b.smsBlock)}</div>
         </div>
       `).join("");
@@ -1523,16 +1639,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Payment Helplines Grid
     if (paymentHelplinesGrid && guidance.paymentHelplines) {
-      paymentHelplinesGrid.innerHTML = guidance.paymentHelplines.map(p => `
-        <div class="p-3 rounded-xl bg-white border border-slate-200 text-xs space-y-1 shadow-2xs">
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-slate-900">${escapeHtml(p.name)}</span>
-            <span class="text-[9px] font-mono text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200 font-bold">${escapeHtml(p.channel)}</span>
+      paymentHelplinesGrid.innerHTML = guidance.paymentHelplines.map(p => {
+        const cleanPhone = (p.phone || "").replace(/[\s-]/g, '');
+        const isUrl = p.altPhone && (p.altPhone.startsWith('http://') || p.altPhone.startsWith('https://'));
+        return `
+          <div class="p-3 rounded-xl bg-white border border-slate-200 text-xs space-y-1 shadow-2xs">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-900">${escapeHtml(p.name)}</span>
+              <span class="text-[9px] font-mono text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200 font-bold">${escapeHtml(p.channel)}</span>
+            </div>
+            <div class="text-[11px] font-mono text-slate-800 font-bold flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs text-indigo-600 shrink-0">call</span>
+              <a href="tel:${escapeHtml(cleanPhone)}" class="hover:text-indigo-700 hover:underline transition-colors">${escapeHtml(p.phone)}</a>
+            </div>
+            ${isUrl ? `
+              <div class="pt-0.5">
+                <a href="${escapeHtml(p.altPhone)}" target="_blank" rel="noopener noreferrer" class="text-[10px] text-indigo-700 underline font-mono inline-flex items-center gap-1 hover:text-indigo-900 transition-colors">
+                  <span class="material-symbols-outlined text-[10px] shrink-0">open_in_new</span>
+                  <span>NPCI Grievance Portal</span>
+                </a>
+              </div>
+            ` : (p.altPhone ? `<div class="text-[10px] text-slate-500 font-mono">${escapeHtml(p.altPhone)}</div>` : '')}
+            <div class="text-[10px] text-slate-500 leading-tight">${escapeHtml(p.rule)}</div>
           </div>
-          <div class="text-[11px] font-mono text-slate-800 font-bold">${escapeHtml(p.phone)}</div>
-          <div class="text-[10px] text-slate-500 leading-tight">${escapeHtml(p.rule)}</div>
-        </div>
-      `).join("");
+        `;
+      }).join("");
     }
 
     // Follow-up Plan
